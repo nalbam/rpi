@@ -46,4 +46,4 @@ case "$1" in
         echo $"Usage: $0 {start|stop|restart}"
 esac
 
-# * 5 * * * ~/nalbam-rpi/gpio/sonic_relay.sh restart > /dev/null 2>&1
+# * 5 * * * ~/rpi/gpio/sonic_relay.sh restart > /dev/null 2>&1
