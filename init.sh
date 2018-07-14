@@ -6,6 +6,8 @@ TEMP_DIR=/tmp
 
 USER=`whoami`
 
+export LC_ALL=C
+
 ################################################################################
 
 usage() {
@@ -64,7 +66,10 @@ upgrade() {
 
 init() {
     sudo apt-get update
+    sudo apt-get upgrade -y
     sudo apt-get install -y curl wget unzip vim fbi dialog wiringpi fonts-unfonts-core
+    sudo apt-get clean all
+    sudo apt-get autoremove -y
 }
 
 localtime() {
