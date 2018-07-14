@@ -58,6 +58,8 @@ update() {
 upgrade() {
     sudo apt-get update
     sudo apt-get upgrade -y
+    sudo apt-get clean all
+    sudo apt-get autoremove -y
 }
 
 init() {

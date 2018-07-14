@@ -1,7 +1,8 @@
 # rpi
 
 ## wifi
-```
+
+```bash
 sudo vi /etc/wpa_supplicant/wpa_supplicant.conf
 
 network={
@@ -11,7 +12,8 @@ network={
 ```
 
 ## gpio
-```
+
+```text
 GPIO. 0 : servo
 GPIO. 1 : ray
 GPIO. 2 : touch
@@ -19,7 +21,8 @@ GPIO. 4 : triger
 GPIO. 5 : echo
 GPIO. 6 : temp
 ```
-```
+
+```text
 +-----+-----+---------+------+---+---Pi 2---+---+------+---------+-----+-----+
 | BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
 +-----+-----+---------+------+---+----++----+---+------+---------+-----+-----+
@@ -47,6 +50,7 @@ GPIO. 6 : temp
 | BCM | wPi |   Name  | Mode | V | Physical | V | Mode | Name    | wPi | BCM |
 +-----+-----+---------+------+---+---Pi 2---+---+------+---------+-----+-----+
 ```
-```
+
+```bash
 gcc -o sonic sonic.c -lwiringPi
 ```
