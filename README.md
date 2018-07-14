@@ -11,6 +11,13 @@ network={
 }
 ```
 
+## run
+
+```bash
+git clone https://github.com/nalbam/rpi
+./rpi/run.sh auto
+```
+
 ## gpio
 
 ```text
