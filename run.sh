@@ -225,7 +225,7 @@ sound() {
     cat ${TARGET}
     if [ `aplay -l | grep -c "USB Audio"` -gt 0 ]; then
         echo_bar
-        aplay -D plughw:0,0 /usr/share/scratch/Media/Sounds/Vocals/Singer1.wav
+        aplay -D plughw:0,0 /usr/share/scratch/Media/Sounds/Vocals/Singer2.wav
     else
         echo_bar
         echo "You need reboot. [sudo reboot]"
