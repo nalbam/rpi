@@ -1,4 +1,4 @@
 alias ll='ls -l'
 alias l='ls -al'
 
-alias npi='~/rpi/init.sh'
+alias r='~/rpi/run.sh'
