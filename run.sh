@@ -67,7 +67,7 @@ upgrade() {
 init() {
     sudo apt-get update
     sudo apt-get upgrade -y
-    sudo apt-get install -y curl wget unzip vim fbi dialog wiringpi fonts-unfonts-core
+    sudo apt-get install -y curl wget unzip vim jq fbi dialog wiringpi fonts-unfonts-core
     sudo apt-get clean all
     sudo apt-get autoremove -y
 }
