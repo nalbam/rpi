@@ -82,10 +82,7 @@ localtime() {
 }
 
 locale() {
-    LOCALE="$1"
-    if [ "${LOCALE}" == "" ]; then
-        LOCALE="en_US.UTF-8"
-    fi
+    LOCALE=${1:-en_US.UTF-8}
 
     sudo locale-gen "${LOCALE}"
 
@@ -103,10 +100,7 @@ locale() {
 }
 
 keyboard() {
-    LAYOUT="$1"
-    if [ "${LAYOUT}" == "" ]; then
-        LAYOUT="us"
-    fi
+    LAYOUT=${1:-us}
 
     TEMPLATE="${PACKAGE_DIR}/keyboard.txt"
     TARGET="/etc/default/keyboard"
@@ -240,7 +234,7 @@ sound() {
 }
 
 mp3() {
-    sudo apt-get install -y mpg321
+    command -v mpg321 > /dev/null || sudo apt-get install -y mpg321
 
     echo_bar
     mpg321 -o alsa -a plughw:0,0 /usr/share/scratch/Media/Sounds/Vocals/Sing-me-a-song.mp3
@@ -248,12 +242,9 @@ mp3() {
 }
 
 speak() {
-    MSG="$1"
-    if [ "${MSG}" == "" ]; then
-        MSG="hi pi"
-    fi
+    MSG=${1:-hi pi}
 
-    sudo apt-get install -y espeak
+    command -v espeak > /dev/null || sudo apt-get install -y espeak
 
     echo_bar
     espeak "${MSG}"
