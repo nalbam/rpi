@@ -142,11 +142,19 @@ apache() {
 
 node() {
     curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-    sudo apt install -y nodejs
+    sudo apt-get install -y nodejs
 
     echo_bar
     node -v
     npm -v
+    echo_bar
+}
+
+docker() {
+    curl -sSL https://get.docker.com | sh
+
+    echo_bar
+    docker -v
     echo_bar
 }
 
@@ -259,6 +267,29 @@ speak() {
     echo_bar
     espeak "${MSG}"
     echo_bar
+}
+
+scan() {
+    TOKEN="$1"
+    TYPE="$2"
+
+    # auto start
+    TARGET="${HOME}/.config/lxsession/LXDE-pi/autostart"
+    TEMP="${TEMP_DIR}/autostart.tmp"
+
+    if [ `cat ${TARGET} | grep -c "server.js"` -eq 0 ]; then
+        cp -rf ${TARGET} ${TEMP}
+        echo "" >> ${TEMP}
+        echo "# arp-scan" >> ${TEMP}
+        echo "LOGZIO_TOKEN=${TOKEN} LOGZIO_TYPE=${TYPE} node server.js" >> ${TEMP}
+        sudo cp ${TEMP} ${TARGET}
+    fi
+
+    echo_bar
+    cat ${TARGET}
+    echo_bar
+
+    reboot
 }
 
 kiosk() {
@@ -424,6 +455,9 @@ case ${CMD} in
     node|nodejs)
         node
         ;;
+    docker)
+        docker
+        ;;
     lcd)
         lcd "${PARAM1}"
         ;;
@@ -450,6 +484,9 @@ case ${CMD} in
         ;;
     speak|espeak)
         speak "${PARAM1}"
+        ;;
+    scan)
+        scan "${PARAM1}" "${PARAM2}"
         ;;
     kiosk)
         kiosk "${PARAM1}" "${PARAM2}"
