@@ -140,6 +140,16 @@ apache() {
     echo_bar
 }
 
+node() {
+    curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+    sudo apt install -y nodejs
+
+    echo_bar
+    node -v
+    npm -v
+    echo_bar
+}
+
 lcd() {
     CMD="$1"
 
@@ -408,8 +418,11 @@ case ${CMD} in
     init)
         init
         ;;
-    web|apache)
+    apache)
         apache
+        ;;
+    node|nodejs)
+        node
         ;;
     lcd)
         lcd "${PARAM1}"
