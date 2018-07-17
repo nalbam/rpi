@@ -293,7 +293,7 @@ scan() {
         cp -rf ${TARGET} ${TEMP}
         echo "" >> ${TEMP}
         echo "# arp-scan" >> ${TEMP}
-        echo "LOGZIO_TOKEN=${TOKEN} LOGZIO_TYPE=${TYPE} node ~/wifi-spi/src/server.js" >> ${TEMP}
+        echo "LOGZIO_TOKEN=${TOKEN} LOGZIO_TYPE=${TYPE} nohup node ~/wifi-spi/src/server.js &" >> ${TEMP}
         sudo cp ${TEMP} ${TARGET}
     fi
 
