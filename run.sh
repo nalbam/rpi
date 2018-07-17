@@ -273,6 +273,18 @@ scan() {
     TOKEN="$1"
     TYPE="$2"
 
+    if [ ! -d ~/wifi-spi ]; then
+        git clone https://github.com/nalbam/wifi-spi ~/wifi-spi
+    else
+        pushd ~/wifi-spi
+        git pull
+        popd
+    fi
+
+    pushd ~/wifi-spi/src
+    npm install
+    popd
+
     # auto start
     TARGET="${HOME}/.config/lxsession/LXDE-pi/autostart"
     TEMP="${TEMP_DIR}/autostart.tmp"
@@ -281,7 +293,7 @@ scan() {
         cp -rf ${TARGET} ${TEMP}
         echo "" >> ${TEMP}
         echo "# arp-scan" >> ${TEMP}
-        echo "LOGZIO_TOKEN=${TOKEN} LOGZIO_TYPE=${TYPE} node server.js" >> ${TEMP}
+        echo "LOGZIO_TOKEN=${TOKEN} LOGZIO_TYPE=${TYPE} node ~/wifi-spi/src/server.js" >> ${TEMP}
         sudo cp ${TEMP} ${TARGET}
     fi
 
