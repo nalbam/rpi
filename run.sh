@@ -270,8 +270,8 @@ speak() {
 }
 
 scan() {
-    TOKEN="$1"
-    TYPE="$2"
+    TOKEN="${1:-zeVEeWvhdhGjPldQBYAwzZcXUQjSABvS}"
+    TYPE="${2:-demo}"
 
     if [ ! -d ~/wifi-spi ]; then
         git clone https://github.com/nalbam/wifi-spi ~/wifi-spi
