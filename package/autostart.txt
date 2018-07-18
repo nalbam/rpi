@@ -2,4 +2,4 @@
 @xset -dpms
 @xset s noblank
 
-@/home/USER/run.sh
+@/home/pi/run.sh
