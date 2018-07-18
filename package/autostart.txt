@@ -1,7 +1,4 @@
-@lxpanel --profile LXDE
-@pcmanfm --desktop --profile LXDE
-@lxterminal
-@leafpad
+@lxpanel --profile LXDE-pi
+@pcmanfm --desktop --profile LXDE-pi
 @xscreensaver -no-splash
-
-@/home/pi/run.sh
+@point-rpi
