@@ -285,17 +285,25 @@ scan() {
     npm install
     popd
 
-    # auto start
-    TARGET="${HOME}/.config/lxsession/LXDE-pi/autostart"
-    TEMP="${TEMP_DIR}/autostart.tmp"
+    # run.sh
+    TARGET="${HOME}/run.sh"
 
-    if [ `cat ${TARGET} | grep -c "server.js"` -eq 0 ]; then
-        cp -rf ${TARGET} ${TEMP}
-        echo "" >> ${TEMP}
-        echo "# arp-scan" >> ${TEMP}
-        echo "LOGZIO_TOKEN=${TOKEN} LOGZIO_TYPE=${TYPE} nohup node ~/wifi-spi/src/server.js &" >> ${TEMP}
-        sudo cp ${TEMP} ${TARGET}
-    fi
+    echo "#!/bin/bash" > ${TARGET}
+    echo "export LOGZIO_TOKEN=${TOKEN}" >> ${TARGET}
+    echo "export LOGZIO_TYPE=${TYPE}" >> ${TARGET}
+    echo "nohup node ~/wifi-spi/src/server.js &" >> ${TARGET}
+
+    chmod 755 ${TARGET}
+
+    echo_bar
+    cat ${TARGET}
+    echo_bar
+
+    # auto start
+    TEMPLATE="${PACKAGE_DIR}/autostart.txt"
+    TARGET="${HOME}/.config/lxsession/LXDE-pi/autostart"
+
+    cp -rf ${TEMPLATE} ${TEMPLATE}
 
     echo_bar
     cat ${TARGET}
@@ -317,9 +325,9 @@ kiosk() {
 
     command -v unclutter > /dev/null || sudo apt-get install -y unclutter matchbox
 
-    # kiosk.sh
-    TEMPLATE="${PACKAGE_DIR}/kiosk-${NAME}.txt"
-    TARGET="${HOME}/kiosk.sh"
+    # run.sh
+    TEMPLATE="${PACKAGE_DIR}/run/kiosk-${NAME}.txt"
+    TARGET="${HOME}/run.sh"
 
     sed "s/CODE/$CODE/g" ${TEMPLATE} > ${TARGET}
     chmod 755 ${TARGET}
@@ -331,14 +339,8 @@ kiosk() {
     # auto start
     TEMPLATE="${PACKAGE_DIR}/autostart.txt"
     TARGET="${HOME}/.config/lxsession/LXDE-pi/autostart"
-    TEMP="${TEMP_DIR}/autostart.tmp"
 
-    if [ `cat ${TARGET} | grep -c "kiosk.sh"` -eq 0 ]; then
-        cp -rf ${TARGET} ${TEMP}
-        echo "" >> ${TEMP}
-        sed "s/USER/$USER/g" ${TEMPLATE} >> ${TEMP}
-        sudo cp ${TEMP} ${TARGET}
-    fi
+    cp -rf ${TEMPLATE} ${TEMPLATE}
 
     echo_bar
     cat ${TARGET}

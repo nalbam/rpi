@@ -2,4 +2,4 @@
 @xset -dpms
 @xset s noblank
 
-@/home/USER/kiosk.sh
+@/home/USER/run.sh
