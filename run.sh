@@ -291,7 +291,7 @@ scan() {
     echo "#!/bin/bash" > ${TARGET}
     echo "export LOGZIO_TOKEN=${TOKEN}" >> ${TARGET}
     echo "export LOGZIO_TYPE=${TYPE}" >> ${TARGET}
-    echo "nohup node ~/wifi-spi/src/server.js &" >> ${TARGET}
+    echo "nohup node ~/wifi-spi/src/server.js & > /dev/null" >> ${TARGET}
 
     chmod 755 ${TARGET}
 
