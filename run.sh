@@ -303,7 +303,7 @@ scan() {
     TEMPLATE="${PACKAGE_DIR}/autostart.txt"
     TARGET="${HOME}/.config/lxsession/LXDE-pi/autostart"
 
-    cp -rf ${TEMPLATE} ${TEMPLATE}
+    cp -rf ${TEMPLATE} ${TARGET}
 
     echo_bar
     cat ${TARGET}
@@ -340,7 +340,7 @@ kiosk() {
     TEMPLATE="${PACKAGE_DIR}/autostart.txt"
     TARGET="${HOME}/.config/lxsession/LXDE-pi/autostart"
 
-    cp -rf ${TEMPLATE} ${TEMPLATE}
+    cp -rf ${TEMPLATE} ${TARGET}
 
     echo_bar
     cat ${TARGET}
