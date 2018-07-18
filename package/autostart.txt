@@ -1,5 +1,6 @@
-@xset s off
-@xset -dpms
-@xset s noblank
+@lxpanel --profile LXDE
+@pcmanfm --desktop --profile LXDE
+@lxterminal
+@xscreensaver -no-splash
 
 @/home/pi/run.sh
