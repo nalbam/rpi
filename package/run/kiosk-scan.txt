@@ -1,0 +1,5 @@
+#!/bin/bash
+unclutter &
+matchbox-window-manager &
+chromium-browser --incognito \
+                 --kiosk http://localhost:3000

@@ -289,9 +289,15 @@ scan() {
     TARGET="${HOME}/run.sh"
 
     echo "#!/bin/bash" > ${TARGET}
+    echo "" >> ${TARGET}
     echo "export LOGZIO_TOKEN=${TOKEN}" >> ${TARGET}
     echo "export LOGZIO_TYPE=${TYPE}" >> ${TARGET}
+    echo "" >> ${TARGET}
     echo "nohup node ~/wifi-spi/src/server.js & > /dev/null" >> ${TARGET}
+    echo "" >> ${TARGET}
+    echo "unclutter &" >> ${TARGET}
+    echo "matchbox-window-manager &" >> ${TARGET}
+    echo "chromium-browser --incognito --kiosk http://localhost:3000" >> ${TARGET}
 
     chmod 755 ${TARGET}
 
