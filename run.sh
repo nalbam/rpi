@@ -281,7 +281,7 @@ scan() {
         popd
     fi
 
-    npm install -g pm2
+    sudo npm install -g pm2
 
     pushd ~/wifi-spi/src
     npm install
