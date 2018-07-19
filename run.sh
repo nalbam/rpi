@@ -281,6 +281,8 @@ scan() {
         popd
     fi
 
+    npm install -g pm2
+
     pushd ~/wifi-spi/src
     npm install
     popd
@@ -293,7 +295,7 @@ scan() {
     echo "export LOGZIO_TOKEN=${TOKEN}" >> ${TARGET}
     echo "export LOGZIO_TYPE=${TYPE}" >> ${TARGET}
     echo "" >> ${TARGET}
-    echo "nohup node ~/wifi-spi/src/server.js & > /dev/null" >> ${TARGET}
+    echo "~/wifi-spi/run.sh" >> ${TARGET}
     echo "" >> ${TARGET}
     echo "unclutter &" >> ${TARGET}
     echo "matchbox-window-manager &" >> ${TARGET}
