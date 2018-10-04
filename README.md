@@ -1,5 +1,11 @@
 # rpi
 
+## clone
+
+```bash
+git clone https://github.com/nalbam/rpi.git
+```
+
 ## wifi
 
 ```bash
