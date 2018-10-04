@@ -18,7 +18,7 @@ usage() {
     echo "${0} auto        [init, date, keyboard, aliases, locale]"
     echo "${0} arcade      [init, date, keyboard, aliases]"
     echo "${0} update      [self update]"
-    echo "${0} upgrade     [apt-get update, upgrade]"
+    echo "${0} upgrade     [apt update, upgrade]"
     echo "${0} apache      [apache2, php5]"
     echo "${0} date        [Asia/Seoul]"
     echo "${0} locale      [en_US.UTF-8]"
@@ -58,18 +58,18 @@ update() {
 }
 
 upgrade() {
-    sudo apt-get update
-    sudo apt-get upgrade -y
-    sudo apt-get clean all
-    sudo apt-get autoremove -y
+    sudo apt update
+    sudo apt upgrade -y
+    sudo apt clean all
+    sudo apt autoremove -y
 }
 
 init() {
-    sudo apt-get update
-    sudo apt-get upgrade -y
-    sudo apt-get install -y curl wget unzip vim jq fbi dialog wiringpi fonts-unfonts-core
-    sudo apt-get clean all
-    sudo apt-get autoremove -y
+    sudo apt update
+    sudo apt upgrade -y
+    sudo apt install -y curl wget unzip vim jq fbi dialog wiringpi fonts-unfonts-core
+    sudo apt clean all
+    sudo apt autoremove -y
 }
 
 localtime() {
@@ -131,7 +131,7 @@ aliases() {
 }
 
 apache() {
-    sudo apt-get install -y apache2 php5
+    sudo apt install -y apache2 php5
 
     echo_bar
     apache2 -version
@@ -142,7 +142,7 @@ apache() {
 
 node() {
     curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
-    sudo apt-get install -y nodejs npm
+    sudo apt install -y nodejs npm
 
     echo_bar
     node -v
@@ -252,7 +252,7 @@ sound() {
 }
 
 mp3() {
-    command -v mpg321 > /dev/null || sudo apt-get install -y mpg321
+    command -v mpg321 > /dev/null || sudo apt install -y mpg321
 
     echo_bar
     mpg321 -o alsa -a plughw:0,0 /usr/share/scratch/Media/Sounds/Vocals/Sing-me-a-song.mp3
@@ -262,7 +262,7 @@ mp3() {
 speak() {
     MSG=${1:-hi pi}
 
-    command -v espeak > /dev/null || sudo apt-get install -y espeak
+    command -v espeak > /dev/null || sudo apt install -y espeak
 
     echo_bar
     espeak "${MSG}"
@@ -331,7 +331,7 @@ kiosk() {
         return
     fi
 
-    command -v unclutter > /dev/null || sudo apt-get install -y unclutter matchbox
+    command -v unclutter > /dev/null || sudo apt install -y unclutter matchbox
 
     # run.sh
     TEMPLATE="${PACKAGE_DIR}/run/kiosk-${NAME}.txt"
