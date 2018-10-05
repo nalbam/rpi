@@ -6,13 +6,53 @@ TEMP_DIR=/tmp
 
 USER=`whoami`
 
-export LC_ALL=C
+# export LC_ALL=C
+
+command -v tput > /dev/null || TPUT=false
+
+_bar() {
+    _echo "================================================================================"
+}
+
+_echo() {
+    if [ -z ${TPUT} ] && [ ! -z $2 ]; then
+        echo -e "$(tput setaf $2)$1$(tput sgr0)"
+    else
+        echo -e "$1"
+    fi
+}
+
+_read() {
+    if [ -z ${TPUT} ]; then
+        read -p "$(tput setaf 6)$1$(tput sgr0)" ANSWER
+    else
+        read -p "$1" ANSWER
+    fi
+}
+
+_result() {
+    _echo "# $@" 4
+}
+
+_command() {
+    _echo "$ $@" 3
+}
+
+_success() {
+    _echo "+ $@" 2
+    exit 0
+}
+
+_error() {
+    _echo "- $@" 1
+    exit 1
+}
 
 ################################################################################
 
 usage() {
     echo " Usage: ${0} {cmd}"
-    echo_bar
+    _bar
     echo_
     echo "${0} init        [vim, fbi, gpio, font]"
     echo "${0} auto        [init, date, keyboard, aliases, locale]"
@@ -31,7 +71,7 @@ usage() {
     echo "${0} kiosk       [kiosk NAME CODE]"
     echo "${0} wifi        [wifi SSID PASSWD]"
     echo_
-    echo_bar
+    _bar
 }
 
 auto() {
@@ -52,7 +92,7 @@ arcade() {
 }
 
 update() {
-    pushd "${SHELL_DIR}"
+    pushd ${SHELL_DIR}
     git pull
     popd
 }
@@ -76,9 +116,9 @@ localtime() {
     sudo rm -rf /etc/localtime
     sudo ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
-    echo_bar
+    _bar
     date
-    echo_bar
+    _bar
 }
 
 locale() {
@@ -94,9 +134,9 @@ locale() {
 
     sed "s/REPLACE/$LOCALE/g" ${TEMPLATE} > ${TEMP} && sudo cp -rf ${TEMP} ${TARGET}
 
-    echo_bar
+    _bar
     cat ${TARGET}
-    echo_bar
+    _bar
 }
 
 keyboard() {
@@ -110,9 +150,9 @@ keyboard() {
 
     sed "s/REPLACE/$LAYOUT/g" ${TEMPLATE} > ${TEMP} && sudo cp -rf ${TEMP} ${TARGET}
 
-    echo_bar
+    _bar
     cat ${TARGET}
-    echo_bar
+    _bar
 }
 
 aliases() {
@@ -125,37 +165,37 @@ aliases() {
 
     . ${TARGET}
 
-    echo_bar
+    _bar
     cat ${TARGET}
-    echo_bar
+    _bar
 }
 
 apache() {
     sudo apt install -y apache2 php5
 
-    echo_bar
+    _bar
     apache2 -version
-    echo_bar
+    _bar
     php -version
-    echo_bar
+    _bar
 }
 
 node() {
     curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
     sudo apt install -y nodejs npm
 
-    echo_bar
+    _bar
     node -v
     npm -v
-    echo_bar
+    _bar
 }
 
 docker() {
     curl -sSL https://get.docker.com | sh
 
-    echo_bar
+    _bar
     docker -v
-    echo_bar
+    _bar
 }
 
 lcd() {
@@ -185,9 +225,9 @@ lcd() {
     if [ "${TEMPLATE}" == "" ]; then
         restore ${TARGET}
 
-        echo_bar
+        _bar
         echo "restored."
-        echo_bar
+        _bar
     else
         # replace
         cp -rf ${BACKUP} ${TEMP}
@@ -195,9 +235,9 @@ lcd() {
         cat ${TEMPLATE} >> ${TEMP}
         sudo cp -rf ${TEMP} ${TARGET}
 
-        echo_bar
+        _bar
         cat ${TEMPLATE}
-        echo_bar
+        _bar
     fi
 }
 
@@ -222,9 +262,9 @@ wifi() {
         sudo sed "s/PASS/$PASS/g" ${TARGET} > ${TEMP} && sudo cp -rf ${TEMP} ${TARGET}
     fi
 
-    echo_bar
+    _bar
     sudo cat ${TARGET}
-    echo_bar
+    _bar
 }
 
 sound() {
@@ -239,24 +279,24 @@ sound() {
 
     sudo cp -rf ${TEMPLATE} ${TARGET}
 
-    echo_bar
+    _bar
     cat ${TARGET}
     if [ `aplay -l | grep -c "USB Audio"` -gt 0 ]; then
-        echo_bar
+        _bar
         aplay -D plughw:0,0 /usr/share/scratch/Media/Sounds/Vocals/Singer2.wav
     else
-        echo_bar
+        _bar
         echo "You need reboot. [sudo reboot]"
     fi
-    echo_bar
+    _bar
 }
 
 mp3() {
     command -v mpg321 > /dev/null || sudo apt install -y mpg321
 
-    echo_bar
+    _bar
     mpg321 -o alsa -a plughw:0,0 /usr/share/scratch/Media/Sounds/Vocals/Sing-me-a-song.mp3
-    echo_bar
+    _bar
 }
 
 speak() {
@@ -264,15 +304,12 @@ speak() {
 
     command -v espeak > /dev/null || sudo apt install -y espeak
 
-    echo_bar
+    _bar
     espeak "${MSG}"
-    echo_bar
+    _bar
 }
 
 scan() {
-    TOKEN="${1:-zeVEeWvhdhGjPldQBYAwzZcXUQjSABvS}"
-    TYPE="${2:-demo}"
-
     if [ ! -d ~/wifi-spi ]; then
         git clone https://github.com/nalbam/wifi-spi ~/wifi-spi
     else
@@ -290,9 +327,6 @@ scan() {
 
     echo "#!/bin/bash" > ${TARGET}
     echo "" >> ${TARGET}
-    echo "export LOGZIO_TOKEN=${TOKEN}" >> ${TARGET}
-    echo "export LOGZIO_TYPE=${TYPE}" >> ${TARGET}
-    echo "" >> ${TARGET}
     echo "~/wifi-spi/run.sh" >> ${TARGET}
     echo "" >> ${TARGET}
     echo "unclutter &" >> ${TARGET}
@@ -301,9 +335,9 @@ scan() {
 
     chmod 755 ${TARGET}
 
-    echo_bar
+    _bar
     cat ${TARGET}
-    echo_bar
+    _bar
 
     # auto start
     TEMPLATE="${PACKAGE_DIR}/autostart.txt"
@@ -313,9 +347,9 @@ scan() {
 
     cp -rf ${TEMPLATE} ${TARGET}
 
-    echo_bar
+    _bar
     cat ${TARGET}
-    echo_bar
+    _bar
 
     reboot
 }
@@ -340,9 +374,9 @@ kiosk() {
     sed "s/CODE/$CODE/g" ${TEMPLATE} > ${TARGET}
     chmod 755 ${TARGET}
 
-    echo_bar
+    _bar
     cat ${TARGET}
-    echo_bar
+    _bar
 
     # auto start
     TEMPLATE="${PACKAGE_DIR}/autostart.txt"
@@ -352,9 +386,9 @@ kiosk() {
 
     cp -rf ${TEMPLATE} ${TARGET}
 
-    echo_bar
+    _bar
     cat ${TARGET}
-    echo_bar
+    _bar
 
     reboot
 }
@@ -374,9 +408,9 @@ screensaver() {
     sed "s/\#xserver\-command\=X/xserver-command\=X \-s 0 \-dpms/g" ${TARGET} > ${TEMP}
     sudo cp -rf ${TEMP} ${TARGET}
 
-    echo_bar
+    _bar
     cat ${TARGET} | grep xserver-command
-    echo_bar
+    _bar
 
     # xinitrc
     TEMPLATE="${PACKAGE_DIR}/xinitrc.txt"
@@ -396,9 +430,9 @@ screensaver() {
         sudo cp ${TEMP} ${TARGET}
     fi
 
-    echo_bar
+    _bar
     cat ${TARGET} | grep xset
-    echo_bar
+    _bar
 }
 
 roms() {
@@ -441,14 +475,6 @@ reboot() {
     echo "Now reboot..."
     sleep 3
     sudo reboot
-}
-
-echo_bar() {
-    echo "================================================================================"
-}
-
-echo_() {
-    echo ""
 }
 
 ################################################################################
