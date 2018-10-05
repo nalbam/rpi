@@ -1,0 +1,6 @@
+#!/bin/bash
+~/wifi-spi/run.sh
+unclutter &
+matchbox-window-manager &
+chromium-browser --incognito \
+                 --kiosk http://localhost:3000

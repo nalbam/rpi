@@ -318,21 +318,17 @@ scan() {
         popd
     fi
 
+    command -v unclutter > /dev/null || sudo apt install -y unclutter matchbox
+
     pushd ~/wifi-spi/src
     npm install
     popd
 
     # run.sh
+    TEMPLATE="${PACKAGE_DIR}/run/wifi-spi.txt"
     TARGET="${HOME}/run.sh"
 
-    echo "#!/bin/bash" > ${TARGET}
-    echo "" >> ${TARGET}
-    echo "~/wifi-spi/run.sh" >> ${TARGET}
-    echo "" >> ${TARGET}
-    echo "unclutter &" >> ${TARGET}
-    echo "matchbox-window-manager &" >> ${TARGET}
-    echo "chromium-browser --incognito --kiosk http://localhost:3000" >> ${TARGET}
-
+    cp -f ${TEMPLATE} ${TARGET}
     chmod 755 ${TARGET}
 
     _bar
