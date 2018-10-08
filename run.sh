@@ -310,6 +310,8 @@ speak() {
 }
 
 scan() {
+    command -v arp-scan > /dev/null || sudo apt install -y arp-scan
+
     if [ ! -d ~/wifi-spi ]; then
         git clone https://github.com/nalbam/wifi-spi ~/wifi-spi
     else
