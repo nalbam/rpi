@@ -53,7 +53,7 @@ _error() {
 usage() {
     echo " Usage: ${0} {cmd}"
     _bar
-    echo_
+    echo
     echo "${0} init        [vim, fbi, gpio, font]"
     echo "${0} auto        [init, date, keyboard, aliases, locale]"
     echo "${0} arcade      [init, date, keyboard, aliases]"
@@ -70,7 +70,7 @@ usage() {
     echo "${0} screensaver [not into screensaver]"
     echo "${0} kiosk       [kiosk NAME CODE]"
     echo "${0} wifi        [wifi SSID PASSWD]"
-    echo_
+    echo
     _bar
 }
 
