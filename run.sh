@@ -359,7 +359,7 @@ kiosk() {
     if [ "${NAME}" == "" ]; then
         NAME="nalbam"
     elif [ "${NAME}" == "kill" ]; then
-        cat ${PACKAGE_DIR}/kiosk-kill.txt | bash
+        cat ${PACKAGE_DIR}/run/kiosk-kill.txt | bash
         return
     fi
 
