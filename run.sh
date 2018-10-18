@@ -126,7 +126,7 @@ locale() {
 
     sudo locale-gen "${LOCALE}"
 
-    TEMPLATE="${PACKAGE_DIR}/locale.txt"
+    TEMPLATE="${PACKAGE_DIR}/locale.sh"
     TARGET="/etc/default/locale"
     TEMP="${TEMP_DIR}/locale.tmp"
 
@@ -142,7 +142,7 @@ locale() {
 keyboard() {
     LAYOUT=${1:-us}
 
-    TEMPLATE="${PACKAGE_DIR}/keyboard.txt"
+    TEMPLATE="${PACKAGE_DIR}/keyboard.sh"
     TARGET="/etc/default/keyboard"
     TEMP="${TEMP_DIR}/keyboard.tmp"
 
@@ -156,7 +156,7 @@ keyboard() {
 }
 
 aliases() {
-    TEMPLATE="${PACKAGE_DIR}/aliases.txt"
+    TEMPLATE="${PACKAGE_DIR}/aliases.sh"
     TARGET="${HOME}/.bash_aliases"
 
     backup ${TARGET}
@@ -191,7 +191,8 @@ node() {
 }
 
 docker() {
-    curl -sSL https://get.docker.com | sh
+    curl -sSL get.docker.com | sh
+    sudo usermod pi -aG docker
 
     _bar
     docker -v
@@ -199,7 +200,7 @@ docker() {
 }
 
 lcd() {
-    CMD="$1"
+    SIZE="$1"
 
     TARGET="/boot/config.txt"
     BACKUP="/boot/config.txt.old"
@@ -211,12 +212,12 @@ lcd() {
 
     backup ${TARGET}
 
-    case ${CMD} in
+    case ${SIZE} in
         5)
-            TEMPLATE="${PACKAGE_DIR}/config-5.txt"
+            TEMPLATE="${PACKAGE_DIR}/config-5.sh"
             ;;
         8)
-            TEMPLATE="${PACKAGE_DIR}/config-8.txt"
+            TEMPLATE="${PACKAGE_DIR}/config-8.sh"
             ;;
         *)
             TEMPLATE=
@@ -245,7 +246,7 @@ wifi() {
     SSID="$1"
     PASS="$2"
 
-    TEMPLATE="${PACKAGE_DIR}/wifi.txt"
+    TEMPLATE="${PACKAGE_DIR}/wifi.conf"
     TARGET="/etc/wpa_supplicant/wpa_supplicant.conf"
     TEMP="${TEMP_DIR}/wifi.tmp"
 
@@ -268,7 +269,7 @@ wifi() {
 }
 
 sound() {
-    TEMPLATE="${PACKAGE_DIR}/alsa-base.txt"
+    TEMPLATE="${PACKAGE_DIR}/alsa-base.conf"
     TARGET="/etc/modprobe.d/alsa-base.conf"
 
     if [ ! -f ${TARGET} ]; then
@@ -309,28 +310,25 @@ speak() {
     _bar
 }
 
-scan() {
-    command -v arp-scan > /dev/null || sudo apt install -y arp-scan
+autostart() {
+    NAME="${1:-nalbam}"
+    CODE="${2}"
 
-    if [ ! -d ~/wifi-spi ]; then
-        git clone https://github.com/nalbam/wifi-spi ~/wifi-spi
+    # runner
+    TEMPLATE="${PACKAGE_DIR}/run/${NAME}"
+    TARGET="${HOME}/.config/rpi-kiosk"
+
+    if [ -f ${TEMPLATE} ]; then
+        sed "s/CODE/$CODE/g" ${TEMPLATE} > ${TARGET}
     else
-        pushd ~/wifi-spi
-        git pull
-        popd
+        echo "${NAME}" > ${TARGET}
     fi
 
-    command -v unclutter > /dev/null || sudo apt install -y unclutter matchbox
+    # start.sh
+    TEMPLATE="${PACKAGE_DIR}/start.sh"
+    TARGET="${HOME}/start.sh"
 
-    pushd ~/wifi-spi/src
-    npm install
-    popd
-
-    # run.sh
-    TEMPLATE="${PACKAGE_DIR}/run/wifi-spi.txt"
-    TARGET="${HOME}/run.sh"
-
-    cp -f ${TEMPLATE} ${TARGET}
+    cp -rf ${TEMPLATE} ${TARGET}
     chmod 755 ${TARGET}
 
     _bar
@@ -338,55 +336,64 @@ scan() {
     _bar
 
     # auto start
-    TEMPLATE="${PACKAGE_DIR}/autostart.txt"
+    TEMPLATE="${PACKAGE_DIR}/autostart.sh"
     TARGET="${HOME}/.config/lxsession/LXDE-pi/autostart"
 
     backup ${TARGET}
-
     cp -rf ${TEMPLATE} ${TARGET}
 
     _bar
     cat ${TARGET}
     _bar
+
+}
+
+scan() {
+    NAME="${1:-localhost}"
+    CODE="${2}"
+
+    if [ "${NAME}" == "stop" ]; then
+        rm -rf ${HOME}/.config/rpi-run
+
+        killall chromium-browser
+        return
+    fi
+
+    command -v arp-scan > /dev/null || sudo apt install -y arp-scan
+
+    command -v unclutter > /dev/null || sudo apt install -y unclutter matchbox
+
+    if [ ! -d ${HOME}/wifi-spi ]; then
+        git clone https://github.com/nalbam/wifi-spi ${HOME}/wifi-spi
+    else
+        pushd ${HOME}/wifi-spi
+        git pull
+        popd
+    fi
+
+    pushd ${HOME}/wifi-spi/src
+    npm install
+    popd
+
+    echo "${HOME}/wifi-spi/run.sh" > ${HOME}/.config/rpi-run
+
+    autostart ${NAME}
 
     reboot
 }
 
 kiosk() {
-    NAME="$1"
-    CODE="$2"
+    NAME="${1:-nalbam}"
+    CODE="${2}"
 
-    if [ "${NAME}" == "" ]; then
-        NAME="nalbam"
-    elif [ "${NAME}" == "kill" ]; then
-        cat ${PACKAGE_DIR}/run/kiosk-kill.txt | bash
+    if [ "${NAME}" == "stop" ]; then
+        killall chromium-browser
         return
     fi
 
     command -v unclutter > /dev/null || sudo apt install -y unclutter matchbox
 
-    # run.sh
-    TEMPLATE="${PACKAGE_DIR}/run/kiosk-${NAME}.txt"
-    TARGET="${HOME}/run.sh"
-
-    sed "s/CODE/$CODE/g" ${TEMPLATE} > ${TARGET}
-    chmod 755 ${TARGET}
-
-    _bar
-    cat ${TARGET}
-    _bar
-
-    # auto start
-    TEMPLATE="${PACKAGE_DIR}/autostart.txt"
-    TARGET="${HOME}/.config/lxsession/LXDE-pi/autostart"
-
-    backup ${TARGET}
-
-    cp -rf ${TEMPLATE} ${TARGET}
-
-    _bar
-    cat ${TARGET}
-    _bar
+    autostart ${NAME} ${CODE}
 
     reboot
 }
@@ -411,7 +418,7 @@ screensaver() {
     _bar
 
     # xinitrc
-    TEMPLATE="${PACKAGE_DIR}/xinitrc.txt"
+    TEMPLATE="${PACKAGE_DIR}/xinitrc.sh"
     TARGET="/etc/X11/xinit/xinitrc"
     TEMP="${TEMP_DIR}/xinitrc.tmp"
 
@@ -434,10 +441,7 @@ screensaver() {
 }
 
 roms() {
-    SERVER="$1"
-    if [ "${SERVER}" == "" ]; then
-        SERVER="s1.nalbam.com"
-    fi
+    SERVER="${1:-roms.nalbam.com}"
 
     rsync -av --bwlimit=2048 ${SERVER}:/home/pi/RetroPie/roms/ /home/pi/RetroPie/roms/
 }
@@ -452,7 +456,7 @@ replace() {
 }
 
 backup() {
-    TARGET="$1"
+    TARGET="${1}"
     BACKUP="${TARGET}.old"
 
     if [ -f ${TARGET} -a ! -f ${BACKUP} ]; then
@@ -461,7 +465,7 @@ backup() {
 }
 
 restore() {
-    TARGET="$1"
+    TARGET="${1}"
     BACKUP="${TARGET}.old"
 
     if [ -f ${BACKUP} ]; then

@@ -1,5 +1,0 @@
-#!/bin/bash
-unclutter &
-matchbox-window-manager &
-chromium-browser --incognito \
-                 --kiosk http://bot.nalbam.com/?code=CODE

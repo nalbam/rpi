@@ -1,5 +1,0 @@
-#!/bin/bash
-unclutter &
-matchbox-window-manager &
-chromium-browser --incognito \
-                 --kiosk https://coinone.co.kr/chart/?site=CoinoneCODE

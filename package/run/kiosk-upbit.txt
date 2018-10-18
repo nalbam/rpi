@@ -1,5 +1,0 @@
-#!/bin/bash
-unclutter &
-matchbox-window-manager &
-chromium-browser --incognito \
-                 --kiosk https://upbit.com/full_chart?code=CRIX.UPBIT.KRW-CODE
