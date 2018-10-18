@@ -494,7 +494,7 @@ backup() {
     TARGET="${1}"
     BACKUP="${TARGET}.old"
 
-    if [ -f ${TARGET} -a ! -f ${BACKUP} ]; then
+    if [ -f ${TARGET} ] && [ ! -f ${BACKUP} ]; then
         sudo cp ${TARGET} ${BACKUP}
     fi
 }
