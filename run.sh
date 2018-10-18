@@ -149,15 +149,15 @@ localtime() {
 locale() {
     LOCALE=${1:-en_US.UTF-8}
 
-    sudo locale-gen "${LOCALE}"
-
     TEMPLATE="${PACKAGE_DIR}/locale.sh"
     TARGET="/etc/default/locale"
-    TEMP="${TEMP_DIR}/locale.tmp"
+
+    sudo locale-gen "${LOCALE}"
 
     backup ${TARGET}
 
-    sed "s/REPLACE/$LOCALE/g" ${TEMPLATE} > ${TEMP} && sudo cp -rf ${TEMP} ${TARGET}
+    sudo cp -rf ${TEMPLATE} ${TARGET}
+    sudo sed -i "s/REPLACE/${LOCALE}/g" ${TARGET}
 
     _bar
     cat ${TARGET}
@@ -169,11 +169,11 @@ keyboard() {
 
     TEMPLATE="${PACKAGE_DIR}/keyboard.sh"
     TARGET="/etc/default/keyboard"
-    TEMP="${TEMP_DIR}/keyboard.tmp"
 
     backup ${TARGET}
 
-    sed "s/REPLACE/$LAYOUT/g" ${TEMPLATE} > ${TEMP} && sudo cp -rf ${TEMP} ${TARGET}
+    sudo cp -rf ${TEMPLATE} ${TARGET}
+    sudo sed -i "s/REPLACE/${LAYOUT}/g" ${TARGET}
 
     _bar
     cat ${TARGET}
@@ -187,8 +187,6 @@ aliases() {
     backup ${TARGET}
 
     cp -rf ${TEMPLATE} ${TARGET}
-
-    . ${TARGET}
 
     _bar
     cat ${TARGET}
@@ -228,11 +226,9 @@ lcd() {
     SIZE="$1"
 
     TARGET="/boot/config.txt"
-    BACKUP="/boot/config.txt.old"
-    TEMP="${TEMP_DIR}/config.tmp"
 
     if [ ! -f ${TARGET} ]; then
-        return 0
+        _error "Not found [${TARGET}]"
     fi
 
     backup ${TARGET}
@@ -255,6 +251,9 @@ lcd() {
         echo "restored."
         _bar
     else
+        BACKUP="/boot/config.txt.old"
+        TEMP="${TEMP_DIR}/config.tmp"
+
         # replace
         cp -rf ${BACKUP} ${TEMP}
         echo "" >> ${TEMP}
@@ -273,10 +272,9 @@ wifi() {
 
     TEMPLATE="${PACKAGE_DIR}/wifi.conf"
     TARGET="/etc/wpa_supplicant/wpa_supplicant.conf"
-    TEMP="${TEMP_DIR}/wifi.tmp"
 
     if [ ! -f ${TARGET} ]; then
-        return 0
+        _error "Not found [${TARGET}]"
     fi
 
     backup ${TARGET}
@@ -284,8 +282,8 @@ wifi() {
     if [ "${PASS}" != "" ]; then
         sudo cp -rf ${TEMPLATE} ${TARGET}
 
-        sudo sed "s/SSID/$SSID/g" ${TARGET} > ${TEMP} && sudo cp -rf ${TEMP} ${TARGET}
-        sudo sed "s/PASS/$PASS/g" ${TARGET} > ${TEMP} && sudo cp -rf ${TEMP} ${TARGET}
+        sudo sed -i "s/SSID/$SSID/g" ${TARGET}
+        sudo sed -i "s/PASS/$PASS/g" ${TARGET}
     fi
 
     _bar
@@ -298,7 +296,7 @@ sound() {
     TARGET="/etc/modprobe.d/alsa-base.conf"
 
     if [ ! -f ${TARGET} ]; then
-        return 0
+        _error "Not found [${TARGET}]"
     fi
 
     backup ${TARGET}
@@ -368,10 +366,10 @@ autostart() {
         fi
     fi
 
-    if [ -f ${TEMPLATE} ]; then
-        sed "s/CODE/$CODE/g" ${TEMPLATE} > ${TARGET}
-    else
-        echo "${KIOSK}" > ${TARGET}
+    echo "${KIOSK}" > ${TARGET}
+
+    if [ "${CODE}" != "" ]; then
+        sed -i "s/CODE/$CODE/g" ${TARGET}
     fi
 
     # start.sh
@@ -395,7 +393,6 @@ autostart() {
     _bar
     cat ${TARGET}
     _bar
-
 }
 
 scan() {
@@ -458,8 +455,7 @@ screensaver() {
     backup ${TARGET}
 
     # xserver-command=X -s 0 -dpms
-    sed "s/\#xserver\-command\=X/xserver-command\=X \-s 0 \-dpms/g" ${TARGET} > ${TEMP}
-    sudo cp -rf ${TEMP} ${TARGET}
+    sed -i "s/\#xserver\-command\=X/xserver-command\=X \-s 0 \-dpms/g" ${TARGET}
 
     _bar
     cat ${TARGET} | grep xserver-command
@@ -492,15 +488,6 @@ roms() {
     SERVER="${1:-roms.nalbam.com}"
 
     rsync -av --bwlimit=2048 ${SERVER}:/home/pi/RetroPie/roms/ /home/pi/RetroPie/roms/
-}
-
-replace() {
-    sudo sed "s/$1/$2/g" $3 > "$3.tmp"
-    sudo cp -rf "$3.tmp" $3
-
-    if [ "${USER}" != "" ]; then
-        sudo chown ${USER}.${USER} $3
-    fi
 }
 
 backup() {
