@@ -356,13 +356,16 @@ autostart() {
 
         _read "Kiosk URL [${DEFAULT}]: "
 
-        KIOSK="${ANSWER:-${DEFAULT}}"
+        if [ "${ANSWER}" == "" ]; then
+            KIOSK="${DEFAULT}"
+        else
+            KIOSK="${ANSWER}"
+            echo "${KIOSK}" >> ${LIST}
+        fi
 
         if [ "${KIOSK}" == "" ]; then
             _error
         fi
-    else
-        echo "${KIOSK}" >> ${LIST}
     fi
 
     if [ -f ${TEMPLATE} ]; then
