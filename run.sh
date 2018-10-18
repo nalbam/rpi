@@ -30,6 +30,31 @@ _read() {
     fi
 }
 
+_select_one() {
+    echo
+
+    IDX=0
+    while read VAL; do
+        IDX=$(( ${IDX} + 1 ))
+        printf "%3s. %s\n" "${IDX}" "${VAL}";
+    done < ${LIST}
+
+    CNT=$(cat ${LIST} | wc -l | xargs)
+
+    echo
+    _read "Please select one. (1-${CNT}) : "
+
+    SELECTED=
+    if [ -z ${ANSWER} ]; then
+        return
+    fi
+    TEST='^[0-9]+$'
+    if ! [[ ${ANSWER} =~ ${TEST} ]]; then
+        return
+    fi
+    SELECTED=$(sed -n ${ANSWER}p ${LIST})
+}
+
 _result() {
     _echo "# $@" 4
 }
@@ -311,17 +336,39 @@ speak() {
 }
 
 autostart() {
-    NAME="${1:-nalbam}"
-    CODE="${2}"
-
-    # runner
-    TEMPLATE="${PACKAGE_DIR}/run/${NAME}"
+    # url
     TARGET="${HOME}/.config/rpi-kiosk"
+
+    LIST="${HOME}/.config/rpi-kiosk-list"
+
+    if [ ! -f ${LIST} ]; then
+        cp ${PACKAGE_DIR}/kiosk ${LIST}
+    fi
+
+    _select_one
+
+    KIOSK="${SELECTED}"
+
+    if [ "${KIOSK}" == "" ]; then
+        if [ -f ${TARGET} ]; then
+            DEFAULT=$(cat ${TARGET} | xargs)
+        fi
+
+        _read "Kiosk URL [${DEFAULT}]: "
+
+        KIOSK="${ANSWER:-${DEFAULT}}"
+
+        if [ "${KIOSK}" == "" ]; then
+            _error
+        fi
+    else
+        echo "${KIOSK}" >> ${LIST}
+    fi
 
     if [ -f ${TEMPLATE} ]; then
         sed "s/CODE/$CODE/g" ${TEMPLATE} > ${TARGET}
     else
-        echo "${NAME}" > ${TARGET}
+        echo "${KIOSK}" > ${TARGET}
     fi
 
     # start.sh
@@ -349,10 +396,9 @@ autostart() {
 }
 
 scan() {
-    NAME="${1:-localhost}"
-    CODE="${2}"
+    CMD="${1}"
 
-    if [ "${NAME}" == "stop" ]; then
+    if [ "${CMD}" == "stop" ]; then
         rm -rf ${HOME}/.config/rpi-run
 
         killall chromium-browser
@@ -377,23 +423,22 @@ scan() {
 
     echo "${HOME}/wifi-spi/run.sh" > ${HOME}/.config/rpi-run
 
-    autostart ${NAME}
+    autostart
 
     reboot
 }
 
 kiosk() {
-    NAME="${1:-nalbam}"
-    CODE="${2}"
+    CMD="${1}"
 
-    if [ "${NAME}" == "stop" ]; then
+    if [ "${CMD}" == "stop" ]; then
         killall chromium-browser
         return
     fi
 
     command -v unclutter > /dev/null || sudo apt install -y unclutter matchbox
 
-    autostart ${NAME} ${CODE}
+    autostart
 
     reboot
 }
