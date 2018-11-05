@@ -291,6 +291,13 @@ wifi() {
     _bar
 }
 
+qr() {
+    command -v zbarimg > /dev/null || sudo apt install -y zbar-tools
+
+    _command "raspistill -o image.jpg && zbarimg image.jpg"
+    raspistill -o image.jpg && zbarimg image.jpg
+}
+
 sound() {
     TEMPLATE="${PACKAGE_DIR}/alsa-base.conf"
     TARGET="/etc/modprobe.d/alsa-base.conf"
@@ -329,6 +336,7 @@ speak() {
     command -v espeak > /dev/null || sudo apt install -y espeak
 
     _bar
+    _command "espeak '${MSG}'"
     espeak "${MSG}"
     _bar
 }
@@ -562,6 +570,9 @@ case ${CMD} in
         ;;
     wifi)
         wifi "${PARAM1}" "${PARAM2}"
+        ;;
+    qr)
+        qr
         ;;
     sound)
         sound
