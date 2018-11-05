@@ -301,6 +301,16 @@ qr() {
     zbarimg image.jpg
 }
 
+still() {
+    command -v fbi > /dev/null || sudo apt install -y fbi
+
+    _command "raspistill -w 960 -h 720 -t 1000 -th none -x none -o image.jpg"
+    raspistill -w 960 -h 720 -t 1000 -th none -x none -o image.jpg
+
+    _command "fbi -a image.jpg"
+    fbi -a image.jpg
+}
+
 sound() {
     TEMPLATE="${PACKAGE_DIR}/alsa-base.conf"
     TARGET="/etc/modprobe.d/alsa-base.conf"
@@ -576,6 +586,9 @@ case ${CMD} in
         ;;
     qr)
         qr
+        ;;
+    still)
+        still
         ;;
     sound)
         sound
