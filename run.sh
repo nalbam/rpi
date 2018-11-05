@@ -311,6 +311,23 @@ still() {
     fbi -a image.jpg
 }
 
+motion() {
+    command -v motion > /dev/null || sudo apt install -y motion
+
+    sudo cp ${PACKAGE_DIR}/motion.conf /etc/motion/motion.conf
+
+    PICAM=$(cat /etc/modules | grep 'bcm2835-v4l2' | wc -l | xargs)
+    if [ "x${PICAM}" == "x0" ]; then
+        TEMP="${TEMP_DIR}/modules.tmp"
+        TARGET=/etc/modules
+
+        cat ${TARGET} > ${TEMP}
+        echo "bcm2835-v4l2" >> ${TEMP}
+
+        sudo cp ${TEMP} ${TARGET}
+    fi
+}
+
 sound() {
     TEMPLATE="${PACKAGE_DIR}/alsa-base.conf"
     TARGET="/etc/modprobe.d/alsa-base.conf"
@@ -589,6 +606,9 @@ case ${CMD} in
         ;;
     still)
         still
+        ;;
+    motion)
+        motion
         ;;
     sound)
         sound
