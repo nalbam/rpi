@@ -294,8 +294,8 @@ wifi() {
 qr() {
     command -v zbarimg > /dev/null || sudo apt install -y zbar-tools
 
-    _command "raspistill -w 960 -h 720 -n -gc -th none -x none -t 2000 -o image.jpg"
-    raspistill -w 960 -h 720 -n -gc -th none -x none -t 2000 -o image.jpg
+    _command "raspistill -w 960 -h 720 -t 1000 -th none -x none -o image.jpg"
+    raspistill -w 960 -h 720 -t 1000 -th none -x none -o image.jpg
 
     _command "zbarimg image.jpg"
     zbarimg image.jpg
