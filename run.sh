@@ -235,10 +235,13 @@ lcd() {
 
     case ${SIZE} in
         5)
-            TEMPLATE="${PACKAGE_DIR}/config-5.sh"
+            TEMPLATE="${PACKAGE_DIR}/config-5.conf"
+            ;;
+        5w)
+            TEMPLATE="${PACKAGE_DIR}/config-5w.conf"
             ;;
         8)
-            TEMPLATE="${PACKAGE_DIR}/config-8.sh"
+            TEMPLATE="${PACKAGE_DIR}/config-8.conf"
             ;;
         *)
             TEMPLATE=
