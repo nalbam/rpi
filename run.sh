@@ -450,19 +450,19 @@ scan() {
 
     command -v unclutter > /dev/null || sudo apt install -y unclutter matchbox
 
-    if [ ! -d ${HOME}/wifi-spi ]; then
-        git clone https://github.com/nalbam/wifi-spi ${HOME}/wifi-spi
+    if [ ! -d ${HOME}/rpi-scan ]; then
+        git clone https://github.com/nalbam/rpi-scan ${HOME}/rpi-scan
     else
-        pushd ${HOME}/wifi-spi
+        pushd ${HOME}/rpi-scan
         git pull
         popd
     fi
 
-    pushd ${HOME}/wifi-spi/src
+    pushd ${HOME}/rpi-scan/src
     npm install
     popd
 
-    echo "${HOME}/wifi-spi/run.sh" > ${HOME}/.config/rpi-run
+    echo "${HOME}/rpi-scan/run.sh" > ${HOME}/.config/rpi-run
 
     autostart
 
