@@ -436,6 +436,37 @@ autostart() {
     _bar
 }
 
+rek() {
+    CMD="${1}"
+
+    if [ "${CMD}" == "stop" ]; then
+        rm -rf ${HOME}/.config/rpi-run
+
+        killall chromium-browser
+        return
+    fi
+
+    command -v unclutter > /dev/null || sudo apt install -y unclutter matchbox
+
+    if [ ! -d ${HOME}/rpi-rek ]; then
+        git clone https://github.com/nalbam/rpi-rek ${HOME}/rpi-rek
+    else
+        pushd ${HOME}/rpi-rek
+        git pull
+        popd
+    fi
+
+    pushd ${HOME}/rpi-rek/src
+    npm install
+    popd
+
+    echo "${HOME}/rpi-rek/run.sh" > ${HOME}/.config/rpi-run
+
+    autostart
+
+    reboot
+}
+
 scan() {
     CMD="${1}"
 
@@ -447,7 +478,6 @@ scan() {
     fi
 
     command -v arp-scan > /dev/null || sudo apt install -y arp-scan
-
     command -v unclutter > /dev/null || sudo apt install -y unclutter matchbox
 
     if [ ! -d ${HOME}/rpi-scan ]; then
@@ -621,6 +651,9 @@ case ${CMD} in
         ;;
     speak|espeak)
         speak "${PARAM1}"
+        ;;
+    rek)
+        rek "${PARAM1}" "${PARAM2}"
         ;;
     scan)
         scan "${PARAM1}" "${PARAM2}"
