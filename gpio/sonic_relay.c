@@ -7,9 +7,10 @@
 #define out1 2
 #define out2 3
 
-int main (void)
+int main(void)
 {
-    if (wiringPiSetup () == -1) {
+    if (wiringPiSetup() == -1)
+    {
         return 1;
     }
 
@@ -30,36 +31,45 @@ int main (void)
 
     int pos = 70;
 
-    while (1) {
+    while (1)
+    {
         digitalWrite(trigPin, LOW);
         usleep(2);
         digitalWrite(trigPin, HIGH);
         usleep(20);
         digitalWrite(trigPin, LOW);
 
-        while (digitalRead(echoPin) == LOW);
+        while (digitalRead(echoPin) == LOW)
+            ;
         long startTime = micros();
-        while (digitalRead(echoPin) == HIGH);
+        while (digitalRead(echoPin) == HIGH)
+            ;
         long travelTime = micros() - startTime;
 
         int distance = travelTime / 58;
 
         printf("Distance: %dcm\n", distance);
 
-        if (distance > minDist && distance < maxDist) {
-            if (distance > pos) {
+        if (distance > minDist && distance < maxDist)
+        {
+            if (distance > pos)
+            {
                 outCount++;
                 inCount = 0;
 
-                if (outCount > delayCount) {
+                if (outCount > delayCount)
+                {
                     digitalWrite(out1, HIGH);
                     digitalWrite(out2, HIGH);
                 }
-            } else {
+            }
+            else
+            {
                 inCount++;
                 outCount = 0;
 
-                if (inCount > delayCount) {
+                if (inCount > delayCount)
+                {
                     digitalWrite(out1, LOW);
                     digitalWrite(out2, LOW);
                 }

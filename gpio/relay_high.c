@@ -4,9 +4,10 @@
 #define out1 2
 #define out2 3
 
-int main (void)
+int main(void)
 {
-    if (wiringPiSetup() == -1) {
+    if (wiringPiSetup() == -1)
+    {
         return 1;
     }
 

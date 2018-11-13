@@ -1,13 +1,14 @@
-#include <wiringPi.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <softPwm.h>
+#include <wiringPi.h>
 
 #define out 0
 
-int main (void)
+int main(void)
 {
-    if (wiringPiSetup() == -1) {
+    if (wiringPiSetup() == -1)
+    {
         return 1;
     }
 
@@ -17,8 +18,8 @@ int main (void)
     int min = 10;
     int max = 20;
 
-    pinMode(out, OUTPUT); // 0 pin | GPIO 17
-    digitalWrite(out, LOW); // 0 pin output LOW voltage
+    pinMode(out, OUTPUT);       // 0 pin | GPIO 17
+    digitalWrite(out, LOW);     // 0 pin output LOW voltage
     softPwmCreate(out, 0, 200); // 0 pin PWM 20ms
 
     softPwmWrite(out, 15);

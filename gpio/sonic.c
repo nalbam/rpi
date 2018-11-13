@@ -4,9 +4,10 @@
 #define trigPin 4
 #define echoPin 5
 
-int main (void)
+int main(void)
 {
-    if (wiringPiSetup () == -1) {
+    if (wiringPiSetup() == -1)
+    {
         return 1;
     }
 
@@ -15,16 +16,19 @@ int main (void)
 
     FILE *fp;
 
-    while (1) {
+    while (1)
+    {
         digitalWrite(trigPin, LOW);
         usleep(2);
         digitalWrite(trigPin, HIGH);
         usleep(20);
         digitalWrite(trigPin, LOW);
 
-        while (digitalRead(echoPin) == LOW);
+        while (digitalRead(echoPin) == LOW)
+            ;
         long startTime = micros();
-        while (digitalRead(echoPin) == HIGH);
+        while (digitalRead(echoPin) == HIGH)
+            ;
         long travelTime = micros() - startTime;
 
         int distance = travelTime / 58;
