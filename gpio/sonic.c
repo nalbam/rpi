@@ -25,10 +25,11 @@ int main(void)
         digitalWrite(trigPin, LOW);
 
         while (digitalRead(echoPin) == LOW)
-            ;
+            continue;
         long startTime = micros();
+
         while (digitalRead(echoPin) == HIGH)
-            ;
+            continue;
         long travelTime = micros() - startTime;
 
         int distance = travelTime / 58;
