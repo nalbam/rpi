@@ -11,8 +11,8 @@ print('start')
 gpio.setup(trig, gpio.OUT)
 gpio.setup(echo, gpio.IN)
 
-try :
-    while True :
+try:
+    while True:
         gpio.output(trig, False)
         time.sleep(0.5)
 
@@ -20,11 +20,11 @@ try :
         time.sleep(0.00001)
         gpio.output(trig, False)
 
-        while gpio.input(echo) == 0 :
+        while gpio.input(echo) == 0:
             continue
         pulse_start = time.time()
 
-        while gpio.input(echo) == 1 :
+        while gpio.input(echo) == 1:
             continue
         pulse_end = time.time()
 
@@ -33,5 +33,5 @@ try :
         distance = round(distance, 2)
 
         print('Distance : ', distance, 'cm')
-except :
+except:
     gpio.cleanup()
