@@ -425,6 +425,7 @@ autostart() {
     _bar
 
     # auto start
+    # /etc/xdg/lxsession/LXDE-pi/autostart
     mkdir -p ${HOME}/.config/lxsession/LXDE-pi
     TEMPLATE="${PACKAGE_DIR}/autostart.sh"
     TARGET="${HOME}/.config/lxsession/LXDE-pi/autostart"
