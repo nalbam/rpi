@@ -19,8 +19,8 @@ BORDER = (100, 100, 100)
 # Get a reference to webcam #0 (the default one)
 cap = cv2.VideoCapture(0)
 
-frame_w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-frame_h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+frame_w = 480  # cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+frame_h = 320  # cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
 BOX_SIZE = [int(frame_w / 2), int(frame_w / 2)]
 BOX_PIX = [BOX_SIZE[0] / 32, BOX_SIZE[1] / 32]
