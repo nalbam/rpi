@@ -6,9 +6,25 @@ cap = cv2.VideoCapture(0)
 frame_w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 frame_h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
+rate = 8 / frame_h
+bigg = frame_h / 8
+
 while True:
     # Grab a single frame of video
     ret, frame = cap.read()
+
+    # overlay
+    overlay = frame.copy()
+
+    # rectangle
+    color = (0, 0, 255)
+    left = int(6 * bigg)
+    right = int(7 * bigg)
+    top = int(4 * bigg)
+    bottom = int(5 * bigg)
+    cv2.rectangle(overlay, (left, top), (right, bottom), color, cv2.FILLED)
+
+    cv2.addWeighted(overlay, 0.3, frame, 1 - 0.4, 0, frame)
 
     # Display the resulting image
     cv2.imshow("Video", frame)

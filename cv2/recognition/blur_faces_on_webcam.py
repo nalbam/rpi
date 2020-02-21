@@ -1,8 +1,6 @@
 import cv2
 import face_recognition
-import glob
 import numpy as np
-import re
 
 # This is a demo of blurring faces in video.
 
@@ -10,15 +8,8 @@ import re
 # OpenCV is *not* required to use the face_recognition library. It's only required if you want to run this
 # specific demo. If you have trouble installing it, try any of the other demos that don't require it instead.
 
-cam = 0
-# for file in glob.glob("/dev/video*"):
-#     m = re.search("/dev/video(.+?)", file)
-#     if m:
-#         cam = m.group(1)
-#         break
-
 # Get a reference to webcam #0 (the default one)
-cap = cv2.VideoCapture(cam)
+cap = cv2.VideoCapture(0)
 
 # Initialize some variables
 face_locations = []
