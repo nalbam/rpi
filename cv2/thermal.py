@@ -96,18 +96,7 @@ while True:
                 frame, pt1, pt2, color, cv2.FILLED,
             )
 
-    # frame
-    cv2.rectangle(
-        frame, (0, BOX_POS[1]), (BOX_SIZE[0], BOX_POS[1] + BOX_SIZE[1]), BORDER, 1,
-    )
-    cv2.rectangle(
-        frame,
-        (BOX_SIZE[0], BOX_POS[1]),
-        (BOX_SIZE[0] * 2, BOX_POS[1] + BOX_SIZE[1]),
-        BORDER,
-        1,
-    )
-
+    # border
     cv2.rectangle(
         frame, (0, 0), (w, BOX_POS[1]), BORDER, cv2.FILLED,
     )
@@ -115,6 +104,17 @@ while True:
     cv2.rectangle(
         frame, (0, y2), (w, y2 + BOX_POS[1]), BORDER, cv2.FILLED,
     )
+
+    # cv2.rectangle(
+    #     frame, (0, BOX_POS[1]), (BOX_SIZE[0], BOX_POS[1] + BOX_SIZE[1]), BORDER, 1,
+    # )
+    # cv2.rectangle(
+    #     frame,
+    #     (BOX_SIZE[0], BOX_POS[1]),
+    #     (BOX_SIZE[0] * 2, BOX_POS[1] + BOX_SIZE[1]),
+    #     BORDER,
+    #     1,
+    # )
 
     # Display the resulting image
     cv2.imshow("Video", frame)
