@@ -14,7 +14,7 @@ MAXTEMP = 39.0
 # how many color values we can have
 COLORDEPTH = 1024
 
-BORDER = (100, 100, 100)
+BORDER = (0, 0, 0)
 
 # Get a reference to webcam #0 (the default one)
 cap = cv2.VideoCapture(0)
