@@ -6,6 +6,8 @@ cap = cv2.VideoCapture(0)
 frame_w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
 frame_h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
+print(frame_w, frame_h)
+
 while True:
     # Grab a single frame of video
     ret, frame = cap.read()
