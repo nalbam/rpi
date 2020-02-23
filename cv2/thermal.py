@@ -25,6 +25,7 @@ def parse_args():
     p.add_argument("--height", type=int, default=0, help="height")
     p.add_argument("--min-temp", type=float, default=MINTEMP, help="height")
     p.add_argument("--max-temp", type=float, default=MAXTEMP, help="height")
+    p.add_argument("--alpha", type=float, default=0.9, help="alpha")
     return p.parse_args()
 
 
@@ -88,7 +89,7 @@ class Sensor:
     def map_value(self, x, in_min, in_max, out_min, out_max):
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
-    def draw(self, frame):
+    def draw(self, frame, alpha):
         overlay = frame.copy()
 
         # read the pixels
@@ -118,7 +119,6 @@ class Sensor:
                     overlay, pt1, pt2, color, cv2.FILLED,
                 )
 
-        alpha = 0.9
         cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
 
         cv2.imshow("Video", overlay)
@@ -167,7 +167,7 @@ def main():
         # cv2.imshow("Video", resized)
 
         # draw tempo
-        temp = sensor.draw(frame)
+        sensor.draw(frame, args.alpha)
 
         # Display the resulting image
         cv2.imshow("Video", frame)
