@@ -1,30 +1,43 @@
 import cv2
 import math
 import numpy as np
+import tkinter as tk
 
 from colour import Color
 from scipy.interpolate import griddata
 
 # low range of the sensor (this will be blue on the screen)
-MINTEMP = 33.0
+MINTEMP = 22.0
 
 # high range of the sensor (this will be red on the screen)
-MAXTEMP = 39.0
+MAXTEMP = 30.0
 
 # how many color values we can have
 COLORDEPTH = 1024
 
-BORDER = (0, 0, 0)
+BORDER = (100, 100, 100)
+
+root = tk.Tk()
+
+# SCREEN_W = root.winfo_screenwidth()  # 480  # cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+# SCREEN_H = root.winfo_screenheight()  # 320  # cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+
+# print(SCREEN_W, SCREEN_H)
 
 # Get a reference to webcam #0 (the default one)
 cap = cv2.VideoCapture(0)
 
-frame_w = 480  # cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-frame_h = 320  # cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+SCREEN_W = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+SCREEN_H = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
-BOX_SIZE = [int(frame_w / 2), int(frame_w / 2)]
+# SCREEN_W = root.winfo_screenwidth()  # 480  # cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+# SCREEN_H = root.winfo_screenheight()  # 320  # cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+
+print(SCREEN_W, SCREEN_H)
+
+BOX_SIZE = [int(SCREEN_W / 2), int(SCREEN_W / 2)]
 BOX_PIX = [BOX_SIZE[0] / 32, BOX_SIZE[1] / 32]
-BOX_POS = [int((frame_w - BOX_SIZE[0]) / 2), int((frame_h - BOX_SIZE[1]) / 2)]
+BOX_POS = [int((SCREEN_W - BOX_SIZE[0]) / 2), int((SCREEN_H - BOX_SIZE[1]) / 2)]
 
 # pylint: disable=invalid-slice-index
 points = [(math.floor(ix / 8), (ix % 8)) for ix in range(0, 64)]
@@ -67,7 +80,7 @@ while True:
     ret, frame = cap.read()
 
     # move video
-    w = int(frame_w / 4)
+    w = int(SCREEN_W / 4)
     M = [[1, 0, w], [0, 1, 0]]
 
     h, w = frame.shape[:2]
@@ -79,7 +92,7 @@ while True:
     # for row in sensor.pixels:
     #     pixels = pixels + row
     for temp in range(0, 64):
-        pixels.append(32 + (temp / 8))
+        pixels.append(MINTEMP + (temp / 8))
 
     pixels = [map_value(p, MINTEMP, MAXTEMP, 0, COLORDEPTH - 1) for p in pixels]
 
@@ -105,19 +118,21 @@ while True:
         frame, (0, y2), (w, y2 + BOX_POS[1]), BORDER, cv2.FILLED,
     )
 
-    # cv2.rectangle(
-    #     frame, (0, BOX_POS[1]), (BOX_SIZE[0], BOX_POS[1] + BOX_SIZE[1]), BORDER, 1,
-    # )
-    # cv2.rectangle(
-    #     frame,
-    #     (BOX_SIZE[0], BOX_POS[1]),
-    #     (BOX_SIZE[0] * 2, BOX_POS[1] + BOX_SIZE[1]),
-    #     BORDER,
-    #     1,
-    # )
+    cv2.rectangle(
+        frame, (0, BOX_POS[1]), (BOX_SIZE[0], BOX_POS[1] + BOX_SIZE[1]), BORDER, 1,
+    )
+    cv2.rectangle(
+        frame,
+        (BOX_SIZE[0], BOX_POS[1]),
+        (BOX_SIZE[0] * 2, BOX_POS[1] + BOX_SIZE[1]),
+        BORDER,
+        1,
+    )
 
     # Display the resulting image
     cv2.imshow("Video", frame)
+
+    # cv2.resizeWindow("Video", SCREEN_W, SCREEN_H)
 
     cv2.namedWindow("Video", cv2.WINDOW_NORMAL)
     cv2.setWindowProperty("Video", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
