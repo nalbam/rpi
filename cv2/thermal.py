@@ -2,7 +2,6 @@ import argparse
 import cv2
 import math
 import numpy as np
-import tkinter as tk
 
 from colour import Color
 from scipy.interpolate import griddata
@@ -44,9 +43,10 @@ class Sensor:
         self.min_temp = args.min_temp
         self.max_temp = args.max_temp
 
-        self.size = [int(width / 2), int(width / 2)]
+        self.size = [int(width / 3), int(width / 3)]
         self.pixels = [self.size[0] / 32, self.size[1] / 32]
-        self.start_pos = [int(width - self.size[0]), int((height - self.size[1]) / 2)]
+        # self.start_pos = [0, int((height - self.size[1]) / 2)]
+        self.start_pos = [0, 0]
 
         self.colors = self.get_colors()
 
@@ -89,6 +89,8 @@ class Sensor:
         return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 
     def draw(self, frame):
+        overlay = frame.copy()
+
         # read the pixels
         pixels = []
         # for row in sensor.pixels:
@@ -113,8 +115,13 @@ class Sensor:
                 color = self.get_color(pixel)
 
                 cv2.rectangle(
-                    frame, pt1, pt2, color, cv2.FILLED,
+                    overlay, pt1, pt2, color, cv2.FILLED,
                 )
+
+        alpha = 0.9
+        cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+
+        cv2.imshow("Video", overlay)
 
 
 def main():
@@ -140,15 +147,27 @@ def main():
         # Grab a single frame of video
         ret, frame = cap.read()
 
-        # frame = cv2.resize("Video", (frame_w, frame_h), interpolation=cv2.INTER_AREA)
+        if args.mirror:
+            # Invert left and right
+            frame = cv2.flip(frame, 1)
+
+        # resized = cv2.resize(
+        #     frame, (int(frame_w / 4), int(frame_h / 4)), interpolation=cv2.INTER_AREA
+        # )
+        # # cv2.imshow("Video", resized)
+
+        # alpha = 0.9
+        # cv2.addWeighted(resized, alpha, frame, 1 - alpha, 0, frame)
 
         # draw_video(frame)
 
-        sensor.draw(frame)
-
         # frame = cv2.resizeWindow("Video", frame_w, frame_h)
         # resized = cv2.resize("Video", (frame_w, frame_h), interpolation=cv2.INTER_AREA)
-        # cv2.imshow("resized", resized)
+
+        # cv2.imshow("Video", resized)
+
+        # draw tempo
+        temp = sensor.draw(frame)
 
         # Display the resulting image
         cv2.imshow("Video", frame)

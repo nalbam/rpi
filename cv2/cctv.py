@@ -1,6 +1,6 @@
 from collections import deque
 from datetime import datetime
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui
 from threading import Thread
 
 import cv2
@@ -189,58 +189,25 @@ if __name__ == "__main__":
     screen_height = QtGui.QApplication.desktop().screenGeometry().height()
 
     # Create Camera Widgets
-    username = "Your camera username!"
-    password = "Your camera password!"
+    username = "USERNAME"
+    password = "PASSWORD"
 
-    # Stream links
-    camera0 = "rtsp://{}:{}@192.168.1.43:554/cam/realmonitor?channel=1&subtype=0".format(
-        username, password
-    )
-    camera1 = "rtsp://{}:{}@192.168.1.45/axis-media/media.amp".format(
-        username, password
-    )
-    camera2 = "rtsp://{}:{}@192.168.1.47:554/cam/realmonitor?channel=1&subtype=0".format(
-        username, password
-    )
-    camera3 = "rtsp://{}:{}@192.168.1.40:554/cam/realmonitor?channel=1&subtype=0".format(
-        username, password
-    )
-    camera4 = "rtsp://{}:{}@192.168.1.44:554/cam/realmonitor?channel=1&subtype=0".format(
-        username, password
-    )
-    camera5 = "rtsp://{}:{}@192.168.1.42:554/cam/realmonitor?channel=1&subtype=0".format(
-        username, password
-    )
-    camera6 = "rtsp://{}:{}@192.168.1.46:554/cam/realmonitor?channel=1&subtype=0".format(
-        username, password
-    )
-    camera7 = "rtsp://{}:{}@192.168.1.41:554/cam/realmonitor?channel=1&subtype=0".format(
-        username, password
-    )
+    servers = []
+    servers.append("192.168.1.43:554")
+    servers.append("192.168.1.43:554")
+    servers.append("192.168.1.43:554")
+    servers.append("192.168.1.43:554")
 
     # Create camera widgets
     print("Creating Camera Widgets...")
-    zero = CameraWidget(screen_width // 3, screen_height // 3, camera0)
-    one = CameraWidget(screen_width // 3, screen_height // 3, camera1)
-    two = CameraWidget(screen_width // 3, screen_height // 3, camera2)
-    three = CameraWidget(screen_width // 3, screen_height // 3, camera3)
-    four = CameraWidget(screen_width // 3, screen_height // 3, camera4)
-    five = CameraWidget(screen_width // 3, screen_height // 3, camera5)
-    six = CameraWidget(screen_width // 3, screen_height // 3, camera6)
-    seven = CameraWidget(screen_width // 3, screen_height // 3, camera7)
+    for i, server in enumerate(servers):
+        camera = "rtsp://{}:{}@{}".format(username, password, server)
+        widget = CameraWidget(screen_width // 3, screen_height // 3, camera)
 
-    # Add widgets to layout
-    print("Adding widgets to layout...")
-    ml.addWidget(zero.get_video_frame(), 0, 0, 1, 1)
-    ml.addWidget(one.get_video_frame(), 0, 1, 1, 1)
-    ml.addWidget(two.get_video_frame(), 0, 2, 1, 1)
-    ml.addWidget(three.get_video_frame(), 1, 0, 1, 1)
-    ml.addWidget(four.get_video_frame(), 1, 1, 1, 1)
-    ml.addWidget(five.get_video_frame(), 1, 2, 1, 1)
-    ml.addWidget(six.get_video_frame(), 2, 0, 1, 1)
-    ml.addWidget(seven.get_video_frame(), 2, 1, 1, 1)
+        x = i // 3
+        y = i % 3
 
-    print("Verifying camera credentials...")
+        ml.addWidget(widget.get_video_frame(), x, y, 1, 1)
 
     mw.show()
 

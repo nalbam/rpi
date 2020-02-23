@@ -12,14 +12,30 @@ def parse_args():
     return p.parse_args()
 
 
+def add_rect(frame, pos, color, alpha):
+    # overlay
+    overlay = frame.copy()
+
+    # rectangle
+    cv2.rectangle(
+        overlay, (pos[0], pos[1]), (pos[0] + 100, pos[1] + 100), color, cv2.FILLED
+    )
+
+    cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
+
+
 def main():
     args = parse_args()
 
     # Get a reference to webcam #0 (the default one)
     cap = cv2.VideoCapture(0)
 
-    frame_w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    frame_h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    if args.width > 0 and args.height > 0:
+        frame_w = args.width
+        frame_h = args.height
+    else:
+        frame_w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        frame_h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
     print(frame_w, frame_h)
     print('Press "Esc", "q" or "Q" to exit.')
@@ -31,21 +47,15 @@ def main():
         # Grab a single frame of video
         ret, frame = cap.read()
 
-        # overlay
-        overlay = frame.copy()
+        if args.mirror:
+            # Invert left and right
+            frame = cv2.flip(frame, 1)
 
-        # rectangle
-        color = (0, 0, 255)
-        left = int(6 * bigg)
-        right = int(7 * bigg)
-        top = int(4 * bigg)
-        bottom = int(5 * bigg)
-        cv2.rectangle(overlay, (left, top), (right, bottom), color, cv2.FILLED)
-
-        cv2.addWeighted(overlay, 0.3, frame, 1 - 0.4, 0, frame)
-
-        # Invert left and right
-        frame = cv2.flip(frame, 1)
+        add_rect(frame, (100, 100), (0, 0, 255), 0.3)
+        add_rect(frame, (200, 100), (0, 255, 255), 0.4)
+        add_rect(frame, (300, 100), (0, 255, 0), 0.5)
+        add_rect(frame, (400, 100), (255, 255, 0), 0.4)
+        add_rect(frame, (500, 100), (255, 0, 0), 0.3)
 
         # Display the resulting image
         cv2.imshow("Video", frame)

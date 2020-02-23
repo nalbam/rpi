@@ -34,6 +34,10 @@ def main():
         # Grab a single frame of video
         ret, frame = cap.read()
 
+        if args.mirror:
+            # Invert left and right
+            frame = cv2.flip(frame, 1)
+
         # print("Resolution: " + str(frame.shape[0]) + " x " + str(frame.shape[1]))
 
         if args.crop:
@@ -55,10 +59,6 @@ def main():
             frame = cv2.resize(
                 frame, (0, 0), fx=bigg, fy=bigg, interpolation=cv2.INTER_AREA
             )
-
-        if args.mirror:
-            # Invert left and right
-            frame = cv2.flip(frame, 1)
 
         # Display the resulting image
         cv2.imshow("Video", frame)
