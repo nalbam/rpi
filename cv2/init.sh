@@ -3,7 +3,7 @@
 sudo apt update
 sudo apt upgrade -y
 
-sudo apt install -y build-essential cmake pkg-config qt4-dev-tools
+sudo apt install -y build-essential cmake pkg-config qt5-default
 sudo apt install -y libjpeg-dev libtiff5-dev libjasper-dev libpng12-dev
 
 sudo apt install -y libavcodec-dev libavformat-dev libswscale-dev libv4l-dev
