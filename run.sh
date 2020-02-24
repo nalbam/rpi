@@ -80,8 +80,9 @@ usage() {
     _bar
     echo
     echo "${0} init        [vim, fbi, gpio, font]"
-    echo "${0} auto        [init, date, keyboard, aliases, locale]"
-    echo "${0} arcade      [init, date, keyboard, aliases]"
+    echo "${0} auto        [init, aliases]"
+    # echo "${0} auto        [init, date, keyboard, aliases, locale]"
+    # echo "${0} arcade      [init, date, keyboard, aliases]"
     echo "${0} update      [self update]"
     echo "${0} upgrade     [apt update, upgrade]"
     echo "${0} apache      [apache2, php5]"
@@ -101,19 +102,19 @@ usage() {
 
 auto() {
     init
-    locale
-    localtime
-    keyboard
+    # locale
+    # localtime
+    # keyboard
     aliases
-    reboot
+    # reboot
 }
 
 arcade() {
     init
-    localtime
-    keyboard
+    # localtime
+    # keyboard
     aliases
-    reboot
+    # reboot
 }
 
 update() {
