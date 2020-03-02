@@ -687,6 +687,9 @@ case ${CMD} in
     kiosk)
         kiosk "${PARAM1}" "${PARAM2}"
         ;;
+    mirror)
+        mirror "${PARAM1}" "${PARAM2}"
+        ;;
     roms)
         roms "${PARAM1}"
         ;;
