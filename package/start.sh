@@ -1,10 +1,10 @@
 #!/bin/bash
 
 if [ -f /home/pi/.config/rpi-run ]; then
-    KIOSK=$(cat /home/pi/.config/rpi-run | xargs)
+    RUN=$(cat /home/pi/.config/rpi-run | xargs)
 
-    if [ "${KIOSK}" != "" ]; then
-        $(${KIOSK})
+    if [ "${RUN}" != "" ]; then
+        $(${RUN})
     fi
 fi
 

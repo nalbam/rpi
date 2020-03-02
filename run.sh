@@ -379,44 +379,6 @@ speak() {
 }
 
 autostart() {
-    # url
-    TARGET="${HOME}/.config/rpi-kiosk"
-
-    LIST="${HOME}/.config/rpi-kiosk-list"
-
-    if [ ! -f ${LIST} ]; then
-        cp ${PACKAGE_DIR}/kiosk ${LIST}
-    fi
-
-    _select_one
-
-    KIOSK="${SELECTED}"
-
-    if [ "${KIOSK}" == "" ]; then
-        if [ -f ${TARGET} ]; then
-            DEFAULT=$(cat ${TARGET} | xargs)
-        fi
-
-        _read "Kiosk URL [${DEFAULT}]: "
-
-        if [ "${ANSWER}" == "" ]; then
-            KIOSK="${DEFAULT}"
-        else
-            KIOSK="${ANSWER}"
-            echo "${KIOSK}" >> ${LIST}
-        fi
-
-        if [ "${KIOSK}" == "" ]; then
-            _error
-        fi
-    fi
-
-    echo "${KIOSK}" > ${TARGET}
-
-    if [ "${CODE}" != "" ]; then
-        sed -i "s/CODE/$CODE/g" ${TARGET}
-    fi
-
     # start.sh
     TEMPLATE="${PACKAGE_DIR}/start.sh"
     TARGET="${HOME}/start.sh"
@@ -534,6 +496,44 @@ kiosk() {
     fi
 
     command -v unclutter > /dev/null || sudo apt install -y unclutter matchbox
+
+    # url
+    TARGET="${HOME}/.config/rpi-kiosk"
+
+    LIST="${HOME}/.config/rpi-kiosk-list"
+
+    if [ ! -f ${LIST} ]; then
+        cp ${PACKAGE_DIR}/kiosk ${LIST}
+    fi
+
+    _select_one
+
+    KIOSK="${SELECTED}"
+
+    if [ "${KIOSK}" == "" ]; then
+        if [ -f ${TARGET} ]; then
+            DEFAULT=$(cat ${TARGET} | xargs)
+        fi
+
+        _read "Kiosk URL [${DEFAULT}]: "
+
+        if [ "${ANSWER}" == "" ]; then
+            KIOSK="${DEFAULT}"
+        else
+            KIOSK="${ANSWER}"
+            echo "${KIOSK}" >> ${LIST}
+        fi
+
+        if [ "${KIOSK}" == "" ]; then
+            _error
+        fi
+    fi
+
+    echo "${KIOSK}" > ${TARGET}
+
+    if [ "${CODE}" != "" ]; then
+        sed -i "s/CODE/$CODE/g" ${TARGET}
+    fi
 
     autostart
 
