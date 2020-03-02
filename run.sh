@@ -95,6 +95,7 @@ usage() {
     echo "${0} espeak      [espeak hi]"
     echo "${0} screensaver [not into screensaver]"
     echo "${0} kiosk       [kiosk NAME CODE]"
+    echo "${0} mirror      [MagicMirror]"
     echo "${0} wifi        [wifi SSID PASSWD]"
     echo
     _bar
@@ -439,6 +440,26 @@ autostart() {
     _bar
     cat ${TARGET}
     _bar
+}
+
+mirror() {
+    CMD="${1}"
+
+    if [ "${CMD}" == "stop" ]; then
+        rm -rf ${HOME}/.config/rpi-run
+
+        return
+    fi
+
+    # pushd ${HOME}/MagicMirror
+    # npm install
+    # popd
+
+    echo "${PACKAGE_DIR}/mirror.sh" > ${HOME}/.config/rpi-run
+
+    autostart
+
+    reboot
 }
 
 rek() {
