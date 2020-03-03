@@ -30,7 +30,8 @@ int main(void)
 
         pos += dir;
 
-        if (pos <= min || pos >= max) {
+        if (pos <= min || pos >= max)
+        {
             dir *= -1;
         }
 

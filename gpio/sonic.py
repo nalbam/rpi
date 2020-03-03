@@ -6,7 +6,7 @@ gpio.setmode(gpio.BCM)
 trig = 13
 echo = 19
 
-print('start')
+print("start")
 
 gpio.setup(trig, gpio.OUT)
 gpio.setup(echo, gpio.IN)
@@ -32,6 +32,6 @@ try:
         distance = pulse_duration * 17000
         distance = round(distance, 2)
 
-        print('Distance : ', distance, 'cm')
+        print("Distance : ", distance, "cm")
 except:
     gpio.cleanup()
