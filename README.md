@@ -29,7 +29,7 @@ GPIO. 5 : echo
 GPIO. 6 : temp
 ```
 
-![GPIO](images/rpi.png)
+![GPIO](images/GPIO-Pinout-Diagram-2.png)
 
 ## gcc
 
