@@ -552,7 +552,7 @@ screensaver() {
     backup ${TARGET}
 
     # xserver-command=X -s 0 -dpms
-    sed -i "s/\#xserver\-command\=X/xserver-command\=X \-s 0 \-dpms/g" ${TARGET}
+    sudo sed -i "s/\#xserver\-command\=X/xserver-command\=X \-s 0 \-dpms/g" ${TARGET}
 
     _bar
     cat ${TARGET} | grep xserver-command
