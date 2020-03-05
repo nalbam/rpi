@@ -3,8 +3,8 @@
 #include <softPwm.h>
 #include <wiringPi.h>
 
-#define trigPin 4
-#define echoPin 5
+#define trigPin 17
+#define echoPin 27
 
 #define out 0
 

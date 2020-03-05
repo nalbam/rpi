@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <wiringPi.h>
 
-#define trigPin 4
-#define echoPin 5
+#define trigPin 17
+#define echoPin 27
 
 #define out1 2
 #define out2 3

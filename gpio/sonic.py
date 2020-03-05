@@ -3,8 +3,8 @@ import time
 
 gpio.setmode(gpio.BCM)
 
-trig = 13
-echo = 19
+trig = 17
+echo = 27
 
 print("start")
 
