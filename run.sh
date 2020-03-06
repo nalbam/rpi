@@ -424,6 +424,22 @@ mirror() {
     reboot
 }
 
+restroom() {
+    CMD="${1}"
+
+    if [ "${CMD}" == "stop" ]; then
+        rm -rf ${HOME}/.config/rpi-run
+
+        return
+    fi
+
+    echo "${HOME}/rpi-restroom/run.sh" > ${HOME}/.config/rpi-run
+
+    autostart
+
+    reboot
+}
+
 rek() {
     CMD="${1}"
 
@@ -689,6 +705,9 @@ case ${CMD} in
         ;;
     mirror)
         mirror "${PARAM1}" "${PARAM2}"
+        ;;
+    restroom)
+        restroom "${PARAM1}" "${PARAM2}"
         ;;
     roms)
         roms "${PARAM1}"
