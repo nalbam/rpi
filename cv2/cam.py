@@ -42,7 +42,7 @@ def main():
 
         if args.crop:
             w = int(frame_w / 2)
-            x = int(w / 2)
+            x = int((frame_w - w) / 2)
             y = int((frame_h - w) / 2)
 
             # Crop square
