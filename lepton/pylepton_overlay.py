@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
 """
-https://github.com/groupgets/pylepton/blob/master/pylepton_overlay
+https://github.com/groupgets/pylepton/blob/lepton3-dev/pylepton_overlay
 """
 
-import time
-import picamera
-import numpy as np
 import cv2
+import numpy as np
+import picamera
+import time
 import traceback
-from pylepton import Lepton
+
+from pylepton.Lepton3 import Lepton3
 
 
 def main(flip_v=False, alpha=128, device="/dev/spidev0.0"):
@@ -17,7 +18,7 @@ def main(flip_v=False, alpha=128, device="/dev/spidev0.0"):
     # a cross through the center of the display. The shape of
     # the array must be of the form (height, width, color)
     a = np.zeros((240, 320, 3), dtype=np.uint8)
-    lepton_buf = np.zeros((60, 80, 1), dtype=np.uint16)
+    lepton_buf = np.zeros((120, 160, 1), dtype=np.uint16)
 
     with picamera.PiCamera() as camera:
         camera.resolution = (640, 480)
@@ -33,12 +34,12 @@ def main(flip_v=False, alpha=128, device="/dev/spidev0.0"):
             size=(320, 240),
             layer=3,
             alpha=int(alpha),
-            crop=(0, 0, 80, 60),
+            crop=(0, 0, 160, 120),
             vflip=flip_v,
         )
         try:
             time.sleep(0.2)  # give the overlay buffers a chance to initialize
-            with Lepton(device) as l:
+            with Lepton3(device) as l:
                 last_nr = 0
                 while True:
                     _, nr = l.capture(lepton_buf)
