@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from collections import deque
 from datetime import datetime
 from PyQt5 import QtCore, QtGui

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import argparse
 import cv2
 import math
@@ -27,16 +29,6 @@ def parse_args():
     p.add_argument("--max-temp", type=float, default=MAXTEMP, help="height")
     p.add_argument("--alpha", type=float, default=0.9, help="alpha")
     return p.parse_args()
-
-
-# def draw_video(frame):
-#     # move video
-#     w = int(SCREEN_W / 4)
-#     M = [[1, 0, w], [0, 1, 0]]
-
-#     h, w = frame.shape[:2]
-#     M = np.float32(M)
-#     frame = cv2.warpAffine(frame, M, (w, h))
 
 
 class Sensor:
@@ -150,21 +142,6 @@ def main():
         if args.mirror:
             # Invert left and right
             frame = cv2.flip(frame, 1)
-
-        # resized = cv2.resize(
-        #     frame, (int(frame_w / 4), int(frame_h / 4)), interpolation=cv2.INTER_AREA
-        # )
-        # # cv2.imshow("Video", resized)
-
-        # alpha = 0.9
-        # cv2.addWeighted(resized, alpha, frame, 1 - alpha, 0, frame)
-
-        # draw_video(frame)
-
-        # frame = cv2.resizeWindow("Video", frame_w, frame_h)
-        # resized = cv2.resize("Video", (frame_w, frame_h), interpolation=cv2.INTER_AREA)
-
-        # cv2.imshow("Video", resized)
 
         # draw tempo
         sensor.draw(frame, args.alpha)
