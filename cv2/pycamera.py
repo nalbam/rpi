@@ -2,14 +2,17 @@
 
 import argparse
 import cv2
+import pygame
 
 from picamera import PiCamera
+
 
 camera = PiCamera()
 
 camera.start_preview()
-
 camera.exposure_mode = "beach"
+
+pygame.init()
 
 run = True
 while run:
