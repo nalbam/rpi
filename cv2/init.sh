@@ -13,21 +13,21 @@ sudo apt install -y libatlas-base-dev gfortran
 
 sudo apt install -y python2.7-dev python3-dev
 
-sudo apt install -y python3-scipy python3-pygame
+sudo apt install -y python3-numpy python3-scipy python3-pygame
 
 sudo apt autoremove -y
 
 pip3 install cmake
 pip3 install colour
 pip3 install cython
-pip3 install scipy
 pip3 install opencv-python==3.4.6.27
 pip3 install adafruit-blinka
 
 # pip3 install face_recognition
 # pip3 install imutils
-# pip3 install opencv-python-headless
 # pip3 install opencv-contrib-python
+# pip3 install opencv-python-headless
+# pip3 install scipy
 
 # pip3 uninstall Scipy
 # pip3 install --user -U Cython --force-reinstall
