@@ -136,7 +136,7 @@ init() {
     sudo apt upgrade -y
     sudo apt install -y curl wget unzip vim jq fbi dialog wiringpi \
                         fonts-unfonts-core p7zip-full python3-pip \
-                        qt5-default qt4-dev-tools
+                        qt5-default qt4-dev-tools awscli
     sudo apt clean all
     sudo apt autoremove -y
 }
