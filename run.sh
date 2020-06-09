@@ -130,7 +130,7 @@ upgrade() {
     sudo apt upgrade -y
     sudo apt clean all
     sudo apt autoremove -y
-    sudo rpi-update
+    # sudo rpi-update
 }
 
 init() {
@@ -141,7 +141,7 @@ init() {
                         qt5-default qt4-dev-tools awscli
     sudo apt clean all
     sudo apt autoremove -y
-    sudo rpi-update
+    # sudo rpi-update
 }
 
 localtime() {
