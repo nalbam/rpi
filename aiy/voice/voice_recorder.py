@@ -4,7 +4,7 @@ import argparse
 import time
 import threading
 
-from aiy.board import Board
+from aiy.board import Board, Led
 from aiy.voice.audio import AudioFormat, play_wav, record_file, Recorder
 
 
@@ -15,9 +15,11 @@ def main():
 
     with Board() as board:
         print("Press button to start recording.")
+        board.led.state = Led.BEACON
         board.button.wait_for_press()
 
         done = threading.Event()
+        board.led.state = Led.BLINK
         board.button.when_pressed = done.set
 
         def wait():
@@ -30,9 +32,11 @@ def main():
         record_file(AudioFormat.CD, filename=args.filename, wait=wait, filetype="wav")
 
         print("Press button to play recorded sound.")
+        board.led.state = Led.BEACON
         board.button.wait_for_press()
 
         print("Playing...")
+        board.led.state = Led.ON
         play_wav(args.filename)
         print("Done.")
 
