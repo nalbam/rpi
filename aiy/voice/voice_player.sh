@@ -8,10 +8,12 @@ STOP=/home/pi/AIY-voice-kit-python/src/examples/voice/voice_stop.py
 
 _hh() {
     HH=$(TZ=Asia/Seoul date +"%H")
+    echo "HH=${HH}"
 }
 
 _pid() {
     PID=$(/bin/ps -ef | /bin/grep "[v]oice_player" | /bin/grep "[p]ython" | /usr/bin/awk '{print $2}')
+    echo "PID=${PID}"
 }
 
 start()
