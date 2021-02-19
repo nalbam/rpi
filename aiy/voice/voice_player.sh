@@ -25,7 +25,7 @@ stop()
 {
     echo $"Stopping ${NAME}..."
 
-    PID=`/bin/ps -ef | /bin/grep "[v]oice_player" | /bin/grep "[r]oot" | /usr/bin/awk '{print $2}'`
+    PID=`/bin/ps -ef | /bin/grep "[v]oice_player" | /usr/bin/awk '{print $2}'`
     if [ "${PID}" != "" ]; then
         /bin/kill -9 ${PID}
         echo "killed [${PID}]"
