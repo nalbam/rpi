@@ -11,6 +11,7 @@ NAME="voice_player"
 SHELL_DIR=$(dirname $0)
 
 EXEC=/home/pi/AIY-voice-kit-python/src/examples/voice/voice_player.py
+STOP=/home/pi/AIY-voice-kit-python/src/examples/voice/voice_stop.py
 
 start()
 {
@@ -30,6 +31,8 @@ stop()
         /bin/kill -9 ${PID}
         echo "killed [${PID}]"
     fi
+
+    /usr/bin/nohup /usr/bin/python3 ${STOP}
 }
 
 case "$1" in
