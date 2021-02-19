@@ -16,7 +16,7 @@ start()
 {
     echo $"Starting ${NAME}..."
 
-    /usr/bin/nohup ${EXEC} &>/dev/null &
+    /usr/bin/nohup /usr/bin/python3 ${EXEC} &>/dev/null &
 
     echo "ok"
 }
