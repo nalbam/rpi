@@ -2,7 +2,6 @@
 
 import argparse
 import time
-import threading
 
 from aiy.board import Board, Led
 from aiy.voice.audio import AudioFormat, play_wav, record_file, Recorder
