@@ -19,7 +19,7 @@ start()
     _hh
     _pid
 
-    if [ "${HH}" -lt "09" ] && [ "${HH}" -gt "20" ]; then
+    if [ ${HH} -lt 9 ] && [ ${HH} -gt 20 ]; then
       exit 0
     fi
 
@@ -41,7 +41,7 @@ stop()
     _hh
     _pid
 
-    if [ "${HH}" -gt "08" ] && [ "${HH}" -lt "21" ]; then
+    if [ ${HH} -gt 8 ] && [ ${HH} -lt 21 ]; then
       exit 0
     fi
 
