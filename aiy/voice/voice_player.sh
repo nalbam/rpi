@@ -14,7 +14,7 @@ EXEC=/home/pi/AIY-voice-kit-python/src/examples/voice/voice_player.py
 STOP=/home/pi/AIY-voice-kit-python/src/examples/voice/voice_stop.py
 
 _pid() {
-    PID=`/bin/ps -ef | /bin/grep "[v]oice_player" | /usr/bin/awk '{print $2}'`
+    PID=`/bin/ps -ef | /bin/grep "[v]oice_player" | /bin/grep "[p]ython" | /usr/bin/awk '{print $2}'`
 }
 
 start()
