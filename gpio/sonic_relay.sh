@@ -1,15 +1,16 @@
 #!/bin/bash
 #
 # chkconfig: - 50 50
-# description: init file for sonic-relay daemon
+# description: init file for sonic_relay daemon
 #
 
 VAL=0
-NAME="sonic-relay"
+
+NAME="sonic_relay"
 
 SHELL_DIR=$(dirname $0)
 
-EXEC=${SHELL_DIR}/sonic_relay
+EXEC=${SHELL_DIR}/${NAME}
 
 start()
 {
