@@ -50,7 +50,7 @@ stop()
 
     echo "Stopped [${PID}]"
 
-    /usr/bin/nohup /usr/bin/python3 ${STOP}
+    /usr/bin/nohup /usr/bin/python3 ${STOP} &>/dev/null &
 }
 
 case "$1" in
