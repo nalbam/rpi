@@ -4,8 +4,9 @@ from aiy.board import Board, Led
 
 
 def main():
-    board.led.state = Led.OFF
-    print("Done.")
+    with Board() as board:
+        board.led.state = Led.OFF
+        print("Done.")
 
 
 if __name__ == "__main__":
