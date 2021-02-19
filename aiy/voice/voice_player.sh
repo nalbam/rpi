@@ -1,25 +1,27 @@
 #!/bin/bash
-#
-# chkconfig: - 50 50
-# description: init file for voice_player daemon
-#
-
-VAL=0
 
 NAME="voice_player"
-
-SHELL_DIR=$(dirname $0)
 
 EXEC=/home/pi/AIY-voice-kit-python/src/examples/voice/voice_player.py
 STOP=/home/pi/AIY-voice-kit-python/src/examples/voice/voice_stop.py
 
+
+_hh() {
+    HH=$(TZ=Asia/Seoul date +"%H")
+}
+
 _pid() {
-    PID=`/bin/ps -ef | /bin/grep "[v]oice_player" | /bin/grep "[p]ython" | /usr/bin/awk '{print $2}'`
+    PID=$(/bin/ps -ef | /bin/grep "[v]oice_player" | /bin/grep "[p]ython" | /usr/bin/awk '{print $2}')
 }
 
 start()
 {
+    _hh
     _pid
+
+    if [ "${HH}" -lt "09" ] && [ "${HH}" -gt "20" ]; then
+      exit 0
+    fi
 
     if [ "${PID}" != "" ]; then
       exit 1
@@ -36,7 +38,12 @@ start()
 
 stop()
 {
+    _hh
     _pid
+
+    if [ "${HH}" -gt "08" ] && [ "${HH}" -lt "21" ]; then
+      exit 0
+    fi
 
     if [ "${PID}" == "" ]; then
       exit 1
