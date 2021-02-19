@@ -13,24 +13,42 @@ SHELL_DIR=$(dirname $0)
 EXEC=/home/pi/AIY-voice-kit-python/src/examples/voice/voice_player.py
 STOP=/home/pi/AIY-voice-kit-python/src/examples/voice/voice_stop.py
 
+_pid() {
+    PID=`/bin/ps -ef | /bin/grep "[v]oice_player" | /usr/bin/awk '{print $2}'`
+}
+
 start()
 {
-    echo $"Starting ${NAME}..."
+    _pid
+
+    if [ "${PID}" != "" ]; then
+      exit 1
+    fi
+
+    echo "Starting ${NAME}..."
 
     /usr/bin/nohup /usr/bin/python3 ${EXEC} &>/dev/null &
 
-    echo "ok"
+    _pid
+
+    echo "Started [${PID}]"
 }
 
 stop()
 {
-    echo $"Stopping ${NAME}..."
+    _pid
 
-    PID=`/bin/ps -ef | /bin/grep "[v]oice_player" | /usr/bin/awk '{print $2}'`
-    if [ "${PID}" != "" ]; then
-        /bin/kill -9 ${PID}
-        echo "killed [${PID}]"
+    if [ "${PID}" == "" ]; then
+      exit 1
     fi
+
+    echo "Stopping ${NAME} [${PID}]..."
+
+    /bin/kill -9 ${PID}
+
+    _pid
+
+    echo "Stopped [${PID}]"
 
     /usr/bin/nohup /usr/bin/python3 ${STOP}
 }
