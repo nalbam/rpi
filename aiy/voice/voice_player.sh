@@ -8,6 +8,7 @@ STOP=/home/pi/AIY-voice-kit-python/src/examples/voice/voice_stop.py
 
 _hh() {
     HH=$(TZ=Asia/Seoul date +"%H")
+    HH=$(( ${HH} + 0 ))
     echo "HH=${HH}"
 }
 
