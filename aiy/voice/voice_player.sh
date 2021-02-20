@@ -23,11 +23,11 @@ start()
     _pid
 
     if [ ${HH} -lt 9 ] || [ ${HH} -gt 21 ]; then
-      exit 0
+      return
     fi
 
     if [ "${PID}" != "" ]; then
-      exit 1
+      return
     fi
 
     echo "Starting ${NAME}..."
@@ -45,11 +45,11 @@ stop()
     _pid
 
     if [ ${HH} -gt 8 ] && [ ${HH} -lt 22 ]; then
-      exit 0
+      return
     fi
 
     if [ "${PID}" == "" ]; then
-      exit 1
+      return
     fi
 
     echo "Stopping ${NAME} [${PID}]..."
