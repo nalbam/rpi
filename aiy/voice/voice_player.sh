@@ -36,7 +36,7 @@ start() {
 
     echo "Starting ${NAME}..."
 
-    /usr/bin/nohup /usr/bin/python3 ${EXEC} &>/dev/null &
+    /usr/bin/python3 ${EXEC}
 
     _pid
 
@@ -58,7 +58,7 @@ stop() {
 
     echo "Stopped [${PID}]"
 
-    /usr/bin/nohup /usr/bin/python3 ${STOP} &>/dev/null &
+    /usr/bin/python3 ${STOP}
 }
 
 case "$1" in
