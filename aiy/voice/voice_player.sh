@@ -17,17 +17,21 @@ _pid() {
     echo "PID=${PID}"
 }
 
-start()
-{
+run() {
     _hh
+
+    if [ ${HH} -gt 8 ] && [ ${HH} -lt 22 ]; then
+        start
+    else
+        stop
+    fi
+}
+
+start() {
     _pid
 
-    if [ ${HH} -lt 9 ] || [ ${HH} -gt 21 ]; then
-      return
-    fi
-
     if [ "${PID}" != "" ]; then
-      return
+      exit 1
     fi
 
     echo "Starting ${NAME}..."
@@ -39,17 +43,11 @@ start()
     echo "Started [${PID}]"
 }
 
-stop()
-{
-    _hh
+stop() {
     _pid
 
-    if [ ${HH} -gt 8 ] && [ ${HH} -lt 22 ]; then
-      return
-    fi
-
     if [ "${PID}" == "" ]; then
-      return
+      exit 1
     fi
 
     echo "Stopping ${NAME} [${PID}]..."
@@ -64,6 +62,9 @@ stop()
 }
 
 case "$1" in
+    run)
+        run
+        ;;
     start)
         start
         ;;
@@ -78,4 +79,4 @@ case "$1" in
         echo $"Usage: $0 {start|stop|restart}"
 esac
 
-# * 5 * * * ~/rpi/aiy/voice/voice_player.sh restart > /dev/null 2>&1
+# * * * * * ~/rpi/aiy/voice/voice_player.sh run > /dev/null 2>&1
