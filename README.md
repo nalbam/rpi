@@ -20,6 +20,8 @@ git clone https://github.com/nalbam/rpi
 
 ## gpio
 
+![GPIO](images/GPIO-Pinout-Diagram-2.png)
+
 ```text
 GPIO. 0 : servo
 GPIO. 1 : ray
@@ -29,7 +31,11 @@ GPIO. 5 : echo
 GPIO. 6 : temp
 ```
 
-![GPIO](images/GPIO-Pinout-Diagram-2.png)
+```text
+VCC 3V : 1, 17
+GND    : 6, 9, 14, 20, 25, 30, 34, 39
+DOUT   : 11, 13
+```
 
 ## gcc
 
