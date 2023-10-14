@@ -136,9 +136,7 @@ upgrade() {
 init() {
   sudo apt update
   sudo apt upgrade -y
-  sudo apt install -y curl wget unzip vim jq fbi dialog wiringpi \
-    fonts-unfonts-core p7zip-full python3-pip \
-    qt5-default qt4-dev-tools awscli
+  sudo apt install -y curl wget unzip vim jq fbi ibus ibus-hangul fonts-unfonts-core
   sudo apt clean all
   sudo apt autoremove -y
   # sudo rpi-update
@@ -211,7 +209,7 @@ apache() {
 }
 
 node() {
-  curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+  sudo curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
   sudo apt install -y nodejs
 
   _bar
