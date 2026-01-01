@@ -8,14 +8,19 @@ TEMP_DIR=/tmp
 
 USER=$(whoami)
 
-command -v tput >/dev/null || TPUT=false
+# Check if tput is available for colored output
+if command -v tput >/dev/null 2>&1; then
+  TPUT=true
+else
+  TPUT=false
+fi
 
 _bar() {
   _echo "================================================================================"
 }
 
 _echo() {
-  if [ -z ${TPUT} ] && [ -n "${2:-}" ]; then
+  if [ "${TPUT}" = "true" ] && [ -n "${2:-}" ]; then
     echo -e "$(tput setaf "$2")$1$(tput sgr0)"
   else
     echo -e "$1"
@@ -23,7 +28,7 @@ _echo() {
 }
 
 _read() {
-  if [ -z ${TPUT} ]; then
+  if [ "${TPUT}" = "true" ]; then
     read -p "$(tput setaf 6)$1$(tput sgr0)" ANSWER
   else
     read -p "$1" ANSWER
