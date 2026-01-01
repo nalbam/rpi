@@ -1,9 +1,24 @@
 #!/usr/bin/env python3
 
-import RPi.GPIO as gpio
 import time
 import sys
 import logging
+
+# GPIO library import with fallback
+try:
+    import RPi.GPIO as gpio
+except ImportError:
+    try:
+        # Try lgpio-compatible RPi.GPIO replacement
+        import rpi_lgpio.gpio as gpio
+        logging.info("Using rpi_lgpio (lgpio backend) for GPIO access")
+    except ImportError:
+        print("ERROR: GPIO library not found!")
+        print("Please install one of the following:")
+        print("  sudo apt install python3-rpi-lgpio  (recommended)")
+        print("  sudo apt install python3-lgpio")
+        print("  pip3 install RPi.GPIO  (legacy)")
+        sys.exit(1)
 
 # Setup logging
 logging.basicConfig(

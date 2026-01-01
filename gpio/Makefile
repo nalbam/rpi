@@ -1,7 +1,7 @@
 # Makefile for Raspberry Pi GPIO programs
 #
 # Requirements:
-#   - lgpio library (install: sudo apt install lgpio libgpiod-dev)
+#   - lgpio library (install: sudo apt install liblgpio-dev libgpiod-dev python3-lgpio python3-libgpiod)
 #
 # Usage:
 #   make         - Build all programs
@@ -99,4 +99,4 @@ help:
 	@echo "  servo  - Standard servo motor control with PWM"
 	@echo ""
 	@echo "Requirements:"
-	@echo "  - lgpio library: sudo apt install lgpio libgpiod-dev"
+	@echo "  - lgpio library: sudo apt install liblgpio-dev libgpiod-dev python3-lgpio python3-libgpiod"

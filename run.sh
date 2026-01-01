@@ -75,6 +75,53 @@ _error() {
 
 ################################################################################
 
+check_os_version() {
+  if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    VERSION_MAJOR=$(echo "${VERSION_ID}" | cut -d. -f1)
+    if [ "${VERSION_MAJOR}" -lt "12" ]; then
+      _error "This script requires Raspberry Pi OS Bookworm (Debian 12) or later. Current: ${PRETTY_NAME}"
+    fi
+    _echo "OS Version: ${PRETTY_NAME}" 6
+  else
+    _echo "Warning: Cannot verify OS version. This script requires Raspberry Pi OS Bookworm (Debian 12)+" 3
+  fi
+}
+
+enable_interfaces() {
+  _bar
+  _echo "Enabling hardware interfaces (SPI, I2C, Camera)..." 4
+  _bar
+
+  # Enable SPI (for Lepton thermal camera)
+  if command -v raspi-config >/dev/null; then
+    sudo raspi-config nonint do_spi 0
+    _echo "SPI enabled" 2
+
+    # Enable I2C
+    sudo raspi-config nonint do_i2c 0
+    _echo "I2C enabled" 2
+
+    # Enable Camera
+    sudo raspi-config nonint do_camera 0
+    _echo "Camera enabled" 2
+
+    _bar
+    _echo "Hardware interfaces enabled successfully!" 2
+    _echo "Reboot required for changes to take effect" 3
+    _bar
+
+    _read "Reboot now? [y/N]: "
+    if [ "${ANSWER}" == "y" ] || [ "${ANSWER}" == "Y" ]; then
+      reboot_system
+    fi
+  else
+    _error "raspi-config not found. Are you running on Raspberry Pi OS?"
+  fi
+}
+
+################################################################################
+
 usage() {
   echo " Usage: ${0} {cmd}"
   _bar
@@ -84,6 +131,7 @@ usage() {
   echo "${0} update      [저장소 업데이트]"
   echo "${0} upgrade     [시스템 패키지 업그레이드]"
   echo "${0} aliases     [쉘 별칭 설정]"
+  echo "${0} interfaces  [하드웨어 인터페이스 활성화 (SPI, I2C, Camera)]"
   echo "${0} node        [Node.js 20 설치]"
   echo "${0} docker      [Docker 설치]"
   echo "${0} wifi        [WiFi 설정 (NetworkManager)]"
@@ -95,6 +143,7 @@ usage() {
 }
 
 auto() {
+  check_os_version
   init
   aliases
 }
@@ -117,9 +166,15 @@ init() {
   sudo apt upgrade -y
   sudo apt install -y curl wget unzip vim jq git
   sudo apt install -y fbi ibus ibus-hangul fonts-unfonts-core
-  sudo apt install -y lgpio libgpiod-dev python3-lgpio python3-gpiod
+  sudo apt install -y liblgpio-dev libgpiod-dev python3-lgpio python3-libgpiod python3-rpi-lgpio
   sudo apt clean all
   sudo apt autoremove -y
+
+  # Add user to gpio group for hardware access
+  if ! groups "${USER}" | grep -q gpio; then
+    sudo usermod -aG gpio "${USER}"
+    _echo "Added ${USER} to gpio group. Please reboot or re-login for changes to take effect!" 3
+  fi
 }
 
 aliases() {
@@ -411,7 +466,11 @@ upgrade)
   upgrade
   ;;
 init)
+  check_os_version
   init
+  ;;
+interfaces)
+  enable_interfaces
   ;;
 node | nodejs)
   node

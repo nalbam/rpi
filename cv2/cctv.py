@@ -80,6 +80,10 @@ class CameraWidget(QtWidgets.QWidget):
         self.capture = None
         self.video_frame = QtWidgets.QLabel()
 
+        # Reconnection strategy
+        self.retry_count = 0
+        self.max_retry_delay = 60  # Maximum 60 seconds between retries
+
         self.load_network_stream()
 
         # Start background frame grabbing
@@ -134,15 +138,20 @@ class CameraWidget(QtWidgets.QWidget):
                     status, frame = self.capture.read()
                     if status:
                         self.deque.append(frame)
+                        self.retry_count = 0  # Reset retry count on successful read
                     else:
                         logger.warning(f"Failed to read frame from {self.camera_stream_link}")
                         self.capture.release()
                         self.online = False
                 else:
-                    # Attempt to reconnect
-                    logger.info(f"Attempting to reconnect: {self.camera_stream_link}")
+                    # Attempt to reconnect with exponential backoff
+                    delay = min(2 ** self.retry_count, self.max_retry_delay)
+                    logger.info(f"Reconnecting to {self.camera_stream_link} (attempt {self.retry_count + 1}, waiting {delay}s)")
+                    self.spin(delay)
+
                     self.load_network_stream()
-                    self.spin(2)
+                    self.retry_count += 1
+
                 self.spin(0.001)
             except AttributeError:
                 pass

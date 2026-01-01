@@ -2,9 +2,12 @@
 Description=Raspberry Pi Ultrasonic Distance Sensor
 Documentation=https://github.com/nalbam/rpi
 After=multi-user.target
+Wants=systemd-udev-settle.service
+After=systemd-udev-settle.service
 
 [Service]
 Type=simple
+# Note: Replace 'pi' with your username or use DynamicUser=yes for auto user
 User=pi
 WorkingDirectory=/home/pi
 ExecStart=/usr/local/bin/sonic
@@ -19,6 +22,10 @@ SyslogIdentifier=rpi-sonic
 # Security hardening
 NoNewPrivileges=true
 PrivateTmp=true
+
+# GPIO access (alternative to running as root)
+# Requires user to be in 'gpio' group
+SupplementaryGroups=gpio
 
 [Install]
 WantedBy=multi-user.target

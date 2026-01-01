@@ -36,6 +36,7 @@ cd rpi
 ./run.sh init                      # 기본 패키지 설치 (lgpio 포함)
 ./run.sh upgrade                   # 시스템 업그레이드
 ./run.sh aliases                   # 쉘 별칭 설정
+./run.sh interfaces                # 하드웨어 인터페이스 활성화 (SPI, I2C, Camera)
 ```
 
 ### WiFi 설정 (NetworkManager)
@@ -76,7 +77,7 @@ cd rpi
 
 ```bash
 # 시스템 패키지 (C 라이브러리)
-sudo apt install lgpio libgpiod-dev
+sudo apt install liblgpio-dev libgpiod-dev python3-lgpio python3-libgpiod python3-rpi-lgpio
 
 # Python 패키지
 pip3 install -r requirements.txt
@@ -222,7 +223,7 @@ rpi/
 
 ```bash
 sudo apt update
-sudo apt install lgpio libgpiod-dev python3-lgpio python3-gpiod
+sudo apt install liblgpio-dev libgpiod-dev python3-lgpio python3-libgpiod python3-rpi-lgpio
 ```
 
 ### GPIO 권한 오류

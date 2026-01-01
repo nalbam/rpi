@@ -2,7 +2,7 @@
  * Servo Motor Control using lgpio with PWM
  *
  * GPIO Pin Configuration:
- * - Servo Pin: GPIO 0 (BCM 17)
+ * - Servo Pin: GPIO 17 (BCM numbering)
  *
  * Compile:
  *   gcc -o servo servo.c -llgpio
@@ -10,11 +10,20 @@
  * Run:
  *   ./servo
  *
- * Note:
+ * PWM Notes:
  *   Standard servo PWM: 20ms period (50Hz)
  *   - 1.0ms pulse = minimum position (5% duty)
  *   - 1.5ms pulse = center position (7.5% duty)
  *   - 2.0ms pulse = maximum position (10% duty)
+ *
+ * Hardware PWM Pins (Recommended for better accuracy):
+ *   GPIO 12 (PWM0) - Physical pin 32
+ *   GPIO 13 (PWM1) - Physical pin 33
+ *   GPIO 18 (PWM0) - Physical pin 12
+ *   GPIO 19 (PWM1) - Physical pin 35
+ *
+ *   Current implementation uses GPIO 17 with software PWM via lgpio.
+ *   For more precise servo control, consider using hardware PWM pins above.
  */
 
 #include <stdio.h>
@@ -94,9 +103,11 @@ int main(void) {
     int position = SERVO_MIN_US;
     int direction = STEP_US;
 
-    // Register signal handlers
-    signal(SIGINT, signal_handler);
-    signal(SIGTERM, signal_handler);
+    // Register signal handlers for graceful shutdown
+    signal(SIGINT, signal_handler);   // Ctrl+C
+    signal(SIGTERM, signal_handler);  // Termination request
+    signal(SIGHUP, signal_handler);   // Hangup (daemon reload)
+    signal(SIGQUIT, signal_handler);  // Quit signal
 
     printf("Servo Motor Control\n");
     printf("Press Ctrl+C to exit\n\n");

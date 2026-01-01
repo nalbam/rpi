@@ -103,6 +103,7 @@ GPIO 27: 초음파 에코
 ./run.sh update                   # 저장소 업데이트 (git pull)
 ./run.sh upgrade                  # 시스템 패키지 업그레이드
 ./run.sh aliases                  # 쉘 별칭 설정
+./run.sh interfaces               # 하드웨어 인터페이스 활성화 (SPI, I2C, Camera)
 ```
 
 ### 네트워크 및 하드웨어 (Bookworm 전용)
@@ -165,7 +166,13 @@ python3 cv2/cctv.py
 ### Systemd 서비스
 
 ```bash
-# 설치
+# CCTV 환경변수 설정 (먼저 수행)
+sudo mkdir -p /etc/rpi
+sudo cp systemd/cctv.env.example /etc/rpi/cctv.env
+sudo chmod 600 /etc/rpi/cctv.env
+sudo nano /etc/rpi/cctv.env  # 실제 비밀번호 설정
+
+# 서비스 설치
 sudo cp systemd/*.service /etc/systemd/system/
 sudo systemctl daemon-reload
 
@@ -198,14 +205,14 @@ sudo journalctl -u rpi-sonic.service -f
 - **핀 설정**: `lgGpioClaimOutput()` / `lgGpioClaimInput()`
 - **에러 처리**: 모든 lgpio 호출의 반환값 검증
 - **타임아웃**: 무한 루프 방지를 위한 타임아웃 추가
-- **Signal handler**: SIGINT/SIGTERM 처리로 안전한 종료
+- **Signal handler**: SIGINT/SIGTERM/SIGHUP/SIGQUIT 처리로 안전한 종료
 - **정리**: 항상 `lgGpioFree()` 및 `lgGpiochipClose()` 호출
 
 ### Python 패턴
 
 - **로깅**: 모든 프로그램에 `logging` 모듈 사용
 - **에러 처리**: Bare except 금지, 구체적 예외 처리
-- **GPIO**: BCM 핀 번호와 함께 `RPi.GPIO` 사용
+- **GPIO**: BCM 핀 번호 사용, `python3-rpi-lgpio` (lgpio 기반 RPi.GPIO 호환 레이어) 권장
 - **Lepton 카메라**: 컨텍스트 매니저 패턴
 - **OpenCV**: `imutils` 사용
 - **환경변수**: 민감정보는 `os.getenv()` 사용
@@ -215,14 +222,22 @@ sudo journalctl -u rpi-sonic.service -f
 ### 보안
 1. **Command injection 수정**: `start.sh`에서 안전한 스크립트 실행
 2. **입력 검증**: 모든 사용자 입력 검증 및 쿼우팅
-3. **자격증명 관리**: 환경변수 사용, 하드코딩 제거
+3. **자격증명 관리**: Systemd EnvironmentFile 사용 (`/etc/rpi/cctv.env`)
 4. **스크립트 안전성**: `set -euo pipefail` 적용
+5. **패키지 이름 수정**: 올바른 apt 패키지 이름 사용 (`liblgpio-dev`, `python3-libgpiod`)
+
+### 시스템 안정성
+1. **OS 버전 체크**: Bookworm (Debian 12) 이상 확인
+2. **GPIO 권한 자동화**: init 시 사용자를 gpio 그룹에 자동 추가
+3. **하드웨어 인터페이스 자동 활성화**: `./run.sh interfaces` 명령 추가
+4. **재연결 백오프 전략**: CCTV 뷰어에서 지수 백오프 재연결 (1s → 2s → 4s → ... → 60s)
 
 ### 에러 처리
 1. **타임아웃**: C 프로그램의 무한 루프 방지
 2. **NULL 체크**: 모든 포인터 및 파일 작업 검증
-3. **Signal handler**: 안전한 종료 및 리소스 정리
+3. **Signal handler**: SIGINT/SIGTERM/SIGHUP/SIGQUIT 처리로 안전한 종료
 4. **구체적 예외**: Bare except 제거
+5. **Import fallback**: Python GPIO 라이브러리 자동 감지 및 대체
 
 ### 코드 품질
 1. **lgpio 마이그레이션**: wiringPi 대체
@@ -230,12 +245,14 @@ sudo journalctl -u rpi-sonic.service -f
 3. **로깅 시스템**: 구조화된 로깅
 4. **매직 넘버 제거**: 상수로 정의
 5. **중복 코드 제거**: 미사용 import/코드 정리
+6. **하드웨어 PWM 문서화**: servo.c에 하드웨어 PWM 핀 정보 추가
 
 ### 개발 편의성
 1. **Makefile**: C 프로그램 자동 빌드
-2. **requirements.txt**: Python 의존성 명시
+2. **requirements.txt**: Python 의존성 명시 (apt 설치 권장)
 3. **Systemd 서비스**: 백그라운드 실행 지원
 4. **문서화**: README 및 인라인 문서 개선
+5. **환경파일 예제**: `systemd/cctv.env.example` 추가
 
 ## 호환성
 

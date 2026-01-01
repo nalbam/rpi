@@ -109,9 +109,11 @@ int main(void) {
     double distance;
     FILE *fp = NULL;
 
-    // Register signal handlers
-    signal(SIGINT, signal_handler);
-    signal(SIGTERM, signal_handler);
+    // Register signal handlers for graceful shutdown
+    signal(SIGINT, signal_handler);   // Ctrl+C
+    signal(SIGTERM, signal_handler);  // Termination request
+    signal(SIGHUP, signal_handler);   // Hangup (daemon reload)
+    signal(SIGQUIT, signal_handler);  // Quit signal
 
     printf("Ultrasonic Distance Sensor\n");
     printf("Press Ctrl+C to exit\n\n");

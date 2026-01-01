@@ -1,6 +1,12 @@
-# GPIO Libraries (installed via apt: python3-lgpio python3-gpiod)
-# RPi.GPIO is legacy but still supported for backwards compatibility
-RPi.GPIO>=0.7.1
+# GPIO Libraries
+# RECOMMENDED: Install via apt for better compatibility
+#   sudo apt install python3-lgpio python3-libgpiod python3-rpi-lgpio
+#
+# python3-rpi-lgpio provides RPi.GPIO API compatibility using lgpio backend
+# This is the recommended approach for new projects on Raspberry Pi OS Bookworm
+#
+# If you must use pip (not recommended), uncomment below:
+# RPi.GPIO>=0.7.1  # Legacy library (deprecated on Bookworm)
 
 # Computer Vision
 opencv-python>=4.8.0

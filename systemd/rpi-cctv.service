@@ -6,12 +6,19 @@ Wants=network-online.target
 
 [Service]
 Type=simple
+# Note: Replace 'pi' with your username or adjust WorkingDirectory path
 User=pi
 WorkingDirectory=/home/pi/rpi/cv2
 Environment="DISPLAY=:0"
-Environment="CCTV_USERNAME=admin"
-Environment="CCTV_PASSWORD=password"
-Environment="CCTV_SERVERS=192.168.1.43:554"
+
+# Load CCTV credentials from environment file
+# Create /etc/rpi/cctv.env with proper permissions (chmod 600)
+# Example contents:
+#   CCTV_USERNAME=admin
+#   CCTV_PASSWORD=your_password
+#   CCTV_SERVERS=192.168.1.43:554,192.168.1.44:554
+EnvironmentFile=-/etc/rpi/cctv.env
+
 ExecStart=/usr/bin/python3 /home/pi/rpi/cv2/cctv.py
 Restart=on-failure
 RestartSec=10s
