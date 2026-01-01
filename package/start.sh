@@ -23,6 +23,15 @@ if [ -f "${HOME}/.config/rpi-kiosk" ]; then
     if [ -n "${KIOSK}" ]; then
         unclutter &
         matchbox-window-manager &
-        chromium-browser --kiosk --noerrdialogs --disable-infobars --disable-session-crashed-bubble "${KIOSK}"
+
+        # Use chromium (Bookworm) or chromium-browser (legacy) command
+        if command -v chromium >/dev/null 2>&1; then
+            chromium --kiosk --noerrdialogs --disable-infobars --disable-session-crashed-bubble "${KIOSK}"
+        elif command -v chromium-browser >/dev/null 2>&1; then
+            chromium-browser --kiosk --noerrdialogs --disable-infobars --disable-session-crashed-bubble "${KIOSK}"
+        else
+            echo "Error: chromium or chromium-browser not found" >&2
+            exit 1
+        fi
     fi
 fi
