@@ -31,3 +31,13 @@ LCD-show/
 # Temp
 .temp.json
 .temp.yml
+
+# Backup
+*.bak
+*.backup
+
+# Prompt
+.prompt-*.md
+.prompt.md
+prompt-*.md
+prompt.md
