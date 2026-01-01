@@ -3,4 +3,4 @@
 @xscreensaver -no-splash
 @point-rpi
 
-@/home/pi/start.sh
+@START_SCRIPT_PATH

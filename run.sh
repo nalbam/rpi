@@ -6,8 +6,6 @@ TEMP_DIR=/tmp
 
 USER=$(whoami)
 
-# export LC_ALL=C
-
 command -v tput >/dev/null || TPUT=false
 
 _bar() {
@@ -79,44 +77,24 @@ usage() {
   echo " Usage: ${0} {cmd}"
   _bar
   echo
-  echo "${0} init        [vim, fbi, gpio, font]"
+  echo "${0} init        [기본 패키지 설치]"
   echo "${0} auto        [init, aliases]"
-  # echo "${0} auto        [init, date, keyboard, aliases, locale]"
-  # echo "${0} arcade      [init, date, keyboard, aliases]"
-  echo "${0} update      [self update]"
-  echo "${0} upgrade     [apt update, upgrade]"
-  echo "${0} aliases     [ll=ls -l, l=ls -al]"
-  # echo "${0} date        [Asia/Seoul]"
-  # echo "${0} locale      [en_US.UTF-8]"
-  # echo "${0} keyboard    [keyboard layout]"
-  echo "${0} apache      [apache2, php5]"
-  echo "${0} espeak      [espeak hi]"
-  echo "${0} kiosk       [kiosk NAME CODE]"
-  echo "${0} mirror      [MagicMirror]"
-  echo "${0} mp3         [mpg321]"
-  echo "${0} qr          [qr]"
-  echo "${0} screensaver [not into screensaver]"
-  echo "${0} sound       [usb-sound]"
-  echo "${0} wifi        [wifi SSID PASSWD]"
+  echo "${0} update      [저장소 업데이트]"
+  echo "${0} upgrade     [시스템 패키지 업그레이드]"
+  echo "${0} aliases     [쉘 별칭 설정]"
+  echo "${0} node        [Node.js 20 설치]"
+  echo "${0} docker      [Docker 설치]"
+  echo "${0} wifi        [WiFi 설정]"
+  echo "${0} sound       [USB 오디오 설정]"
+  echo "${0} screensaver [화면보호기 비활성화]"
+  echo "${0} kiosk       [키오스크 모드 설정]"
   echo
   _bar
 }
 
 auto() {
   init
-  # locale
-  # localtime
-  # keyboard
   aliases
-  # reboot
-}
-
-arcade() {
-  init
-  # localtime
-  # keyboard
-  aliases
-  # reboot
 }
 
 update() {
@@ -130,59 +108,15 @@ upgrade() {
   sudo apt upgrade -y
   sudo apt clean all
   sudo apt autoremove -y
-  # sudo rpi-update
 }
 
 init() {
   sudo apt update
   sudo apt upgrade -y
-  sudo apt install -y curl wget unzip vim jq fbi ibus ibus-hangul fonts-unfonts-core
+  sudo apt install -y curl wget unzip vim jq git
+  sudo apt install -y fbi ibus ibus-hangul fonts-unfonts-core
   sudo apt clean all
   sudo apt autoremove -y
-  # sudo rpi-update
-}
-
-localtime() {
-  sudo rm -rf /etc/localtime
-  sudo ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime
-
-  _bar
-  date
-  _bar
-}
-
-locale() {
-  LOCALE=${1:-en_US.UTF-8}
-
-  TEMPLATE="${PACKAGE_DIR}/locale.sh"
-  TARGET="/etc/default/locale"
-
-  sudo locale-gen "${LOCALE}"
-
-  backup ${TARGET}
-
-  sudo cp -rf ${TEMPLATE} ${TARGET}
-  sudo sed -i "s/REPLACE/${LOCALE}/g" ${TARGET}
-
-  _bar
-  cat ${TARGET}
-  _bar
-}
-
-keyboard() {
-  LAYOUT=${1:-us}
-
-  TEMPLATE="${PACKAGE_DIR}/keyboard.sh"
-  TARGET="/etc/default/keyboard"
-
-  backup ${TARGET}
-
-  sudo cp -rf ${TEMPLATE} ${TARGET}
-  sudo sed -i "s/REPLACE/${LAYOUT}/g" ${TARGET}
-
-  _bar
-  cat ${TARGET}
-  _bar
 }
 
 aliases() {
@@ -198,16 +132,6 @@ aliases() {
   _bar
 }
 
-apache() {
-  sudo apt install -y apache2 php5
-
-  _bar
-  apache2 -version
-  _bar
-  php -version
-  _bar
-}
-
 node() {
   sudo curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
   sudo apt install -y nodejs
@@ -220,168 +144,113 @@ node() {
 
 docker() {
   curl -sSL get.docker.com | sh
-  sudo usermod pi -aG docker
+  sudo usermod ${USER} -aG docker
 
   _bar
   docker -v
   _bar
 }
 
-lcd() {
-  SIZE="$1"
-
-  TARGET="/boot/config.txt"
-
-  if [ ! -f ${TARGET} ]; then
-    _error "Not found [${TARGET}]"
-  fi
-
-  backup ${TARGET}
-
-  case ${SIZE} in
-  5)
-    TEMPLATE="${PACKAGE_DIR}/config-5.conf"
-    ;;
-  5w)
-    TEMPLATE="${PACKAGE_DIR}/config-5w.conf"
-    ;;
-  8)
-    TEMPLATE="${PACKAGE_DIR}/config-8.conf"
-    ;;
-  *)
-    TEMPLATE=
-    ;;
-  esac
-
-  if [ "${TEMPLATE}" == "" ]; then
-    restore ${TARGET}
-
-    _bar
-    echo "restored."
-    _bar
-  else
-    BACKUP="/boot/config.txt.old"
-    TEMP="${TEMP_DIR}/config.tmp"
-
-    # replace
-    cp -rf ${BACKUP} ${TEMP}
-    echo "" >>${TEMP}
-    cat ${TEMPLATE} >>${TEMP}
-    sudo cp -rf ${TEMP} ${TARGET}
-
-    _bar
-    cat ${TEMPLATE}
-    _bar
-  fi
-}
-
 wifi() {
   SSID="$1"
   PASS="$2"
 
-  TEMPLATE="${PACKAGE_DIR}/wifi.conf"
-  TARGET="/etc/wpa_supplicant/wpa_supplicant.conf"
-
-  if [ ! -f ${TARGET} ]; then
-    _error "Not found [${TARGET}]"
+  if [ -z "${SSID}" ] || [ -z "${PASS}" ]; then
+    _error "Usage: $0 wifi SSID PASSWORD"
   fi
 
-  backup ${TARGET}
+  # NetworkManager가 실행 중인지 확인
+  if systemctl is-active --quiet NetworkManager; then
+    _echo "Using NetworkManager..." 3
 
-  if [ "${PASS}" != "" ]; then
+    # 기존 연결 삭제 (있다면)
+    nmcli connection delete "${SSID}" 2>/dev/null || true
+
+    # 새 WiFi 연결 추가
+    nmcli device wifi connect "${SSID}" password "${PASS}"
+
+    if [ $? -eq 0 ]; then
+      _bar
+      _echo "WiFi connected successfully via NetworkManager" 2
+      nmcli connection show "${SSID}"
+      _bar
+    else
+      _error "Failed to connect to WiFi via NetworkManager"
+    fi
+  else
+    # NetworkManager가 없으면 wpa_supplicant 방식 사용 (레거시)
+    _echo "Using wpa_supplicant (legacy)..." 3
+
+    TEMPLATE="${PACKAGE_DIR}/wifi.conf"
+    TARGET="/etc/wpa_supplicant/wpa_supplicant.conf"
+
+    if [ ! -f ${TARGET} ]; then
+      _error "Not found [${TARGET}]"
+    fi
+
+    backup ${TARGET}
+
     sudo cp -rf ${TEMPLATE} ${TARGET}
-
     sudo sed -i "s/SSID/$SSID/g" ${TARGET}
     sudo sed -i "s/PASS/$PASS/g" ${TARGET}
-  fi
 
-  _bar
-  sudo cat ${TARGET}
-  _bar
-}
+    _bar
+    sudo cat ${TARGET}
+    _bar
 
-qr() {
-  command -v zbarimg >/dev/null || sudo apt install -y zbar-tools
-
-  _command "raspistill -w 960 -h 720 -t 500 -n -th none -x none -o image.jpg"
-  raspistill -w 960 -h 720 -t 500 -n -th none -x none -o image.jpg
-
-  _command "zbarimg image.jpg"
-  zbarimg image.jpg
-}
-
-still() {
-  command -v fbi >/dev/null || sudo apt install -y fbi
-
-  _command "raspistill -w 960 -h 720 -t 1000 -th none -x none -o image.jpg"
-  raspistill -w 960 -h 720 -t 1000 -th none -x none -o image.jpg
-
-  _command "fbi -a image.jpg"
-  fbi -a image.jpg
-}
-
-motion() {
-  command -v motion >/dev/null || sudo apt install -y motion
-
-  sudo cp ${PACKAGE_DIR}/motion.conf /etc/motion/motion.conf
-
-  PICAM=$(cat /etc/modules | grep 'bcm2835-v4l2' | wc -l | xargs)
-  if [ "x${PICAM}" == "x0" ]; then
-    TEMP="${TEMP_DIR}/modules.tmp"
-    TARGET=/etc/modules
-
-    cat ${TARGET} >${TEMP}
-    echo "bcm2835-v4l2" >>${TEMP}
-
-    sudo cp ${TEMP} ${TARGET}
+    _echo "WiFi configured. Restart networking or reboot." 3
   fi
 }
 
 sound() {
-  TEMPLATE="${PACKAGE_DIR}/alsa-base.conf"
-  TARGET="/etc/modprobe.d/alsa-base.conf"
+  _bar
+  _echo "Audio Configuration" 4
+  _bar
 
-  if [ ! -f ${TARGET} ]; then
-    _error "Not found [${TARGET}]"
-  fi
-
-  backup ${TARGET}
-
-  sudo cp -rf ${TEMPLATE} ${TARGET}
+  # 오디오 장치 목록 표시
+  _echo "Available audio devices:" 3
+  aplay -l
 
   _bar
-  cat ${TARGET}
-  if [ $(aplay -l | grep -c "USB Audio") -gt 0 ]; then
+
+  # PulseAudio/PipeWire 확인
+  if command -v pactl >/dev/null; then
+    _echo "Using PulseAudio/PipeWire (recommended)" 2
     _bar
-    aplay -D plughw:0,0 /usr/share/scratch/Media/Sounds/Vocals/Singer2.wav
+    pactl list short sinks
+
+    _bar
+    _echo "To change default audio output, use:" 3
+    _echo "  raspi-config -> System Options -> Audio" 6
+    _echo "Or use GUI: pavucontrol (install: sudo apt install pavucontrol)" 6
+    _bar
   else
-    _bar
-    echo "You need reboot. [sudo reboot]"
+    # 레거시 ALSA 설정
+    _echo "Using legacy ALSA configuration..." 3
+
+    TEMPLATE="${PACKAGE_DIR}/alsa-base.conf"
+    TARGET="/etc/modprobe.d/alsa-base.conf"
+
+    if [ -f ${TARGET} ]; then
+      backup ${TARGET}
+      sudo cp -rf ${TEMPLATE} ${TARGET}
+
+      _bar
+      cat ${TARGET}
+      _bar
+      _echo "Configuration applied. Reboot required." 3
+    else
+      _echo "ALSA config not found. Use raspi-config instead." 6
+    fi
   fi
-  _bar
-}
-
-mp3() {
-  command -v mpg321 >/dev/null || sudo apt install -y mpg321
 
   _bar
-  mpg321 -o alsa -a plughw:0,0 /usr/share/scratch/Media/Sounds/Vocals/Sing-me-a-song.mp3
-  _bar
-}
-
-speak() {
-  MSG=${1:-hi pi}
-
-  command -v espeak >/dev/null || sudo apt install -y espeak
-
-  _bar
-  _command "espeak '${MSG}'"
-  espeak "${MSG}"
+  _echo "Test audio with: speaker-test -t wav -c 2" 6
   _bar
 }
 
 autostart() {
-  # start.sh
+  # start.sh 복사
   TEMPLATE="${PACKAGE_DIR}/start.sh"
   TARGET="${HOME}/start.sh"
 
@@ -389,139 +258,79 @@ autostart() {
   chmod 755 ${TARGET}
 
   _bar
+  _echo "Start script created: ${TARGET}" 2
   cat ${TARGET}
   _bar
 
-  # auto start
-  # /etc/xdg/lxsession/LXDE-pi/autostart
-  mkdir -p ${HOME}/.config/lxsession/LXDE-pi
-  TEMPLATE="${PACKAGE_DIR}/autostart.sh"
-  TARGET="${HOME}/.config/lxsession/LXDE-pi/autostart"
+  # Desktop 환경 감지
+  if [ ! -z "$XDG_CURRENT_DESKTOP" ]; then
+    DESKTOP_ENV="$XDG_CURRENT_DESKTOP"
+  elif [ -d "${HOME}/.config/lxsession/LXDE-pi" ]; then
+    DESKTOP_ENV="LXDE"
+  elif [ -f "${HOME}/.config/wayfire.ini" ]; then
+    DESKTOP_ENV="wayfire"
+  else
+    DESKTOP_ENV="unknown"
+  fi
 
-  backup ${TARGET}
-  cp -rf ${TEMPLATE} ${TARGET}
+  _echo "Detected desktop environment: ${DESKTOP_ENV}" 3
+
+  # LXDE 자동시작 설정
+  if [ -d "${HOME}/.config/lxsession" ] || [ "${DESKTOP_ENV}" == "LXDE" ]; then
+    mkdir -p ${HOME}/.config/lxsession/LXDE-pi
+    TEMPLATE="${PACKAGE_DIR}/autostart.sh"
+    TARGET="${HOME}/.config/lxsession/LXDE-pi/autostart"
+
+    backup ${TARGET}
+    cp -rf ${TEMPLATE} ${TARGET}
+    sed -i "s|START_SCRIPT_PATH|${HOME}/start.sh|g" ${TARGET}
+
+    _bar
+    _echo "LXDE autostart configured: ${TARGET}" 2
+    cat ${TARGET}
+    _bar
+  fi
+
+  # XDG autostart 설정 (Wayfire, GNOME, etc.)
+  mkdir -p ${HOME}/.config/autostart
+  DESKTOP_FILE="${HOME}/.config/autostart/rpi-startup.desktop"
+
+  cat >${DESKTOP_FILE} <<EOF
+[Desktop Entry]
+Type=Application
+Name=RPI Startup
+Exec=${HOME}/start.sh
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+EOF
 
   _bar
-  cat ${TARGET}
+  _echo "XDG autostart configured: ${DESKTOP_FILE}" 2
+  cat ${DESKTOP_FILE}
   _bar
-}
-
-mirror() {
-  CMD="${1}"
-
-  if [ "${CMD}" == "stop" ]; then
-    rm -rf ${HOME}/.config/rpi-run
-
-    return
-  fi
-
-  # pushd ${HOME}/MagicMirror
-  # npm install
-  # popd
-
-  echo "${PACKAGE_DIR}/mirror.sh" >${HOME}/.config/rpi-run
-
-  autostart
-
-  reboot
-}
-
-restroom() {
-  CMD="${1}"
-
-  if [ "${CMD}" == "stop" ]; then
-    rm -rf ${HOME}/.config/rpi-run
-
-    return
-  fi
-
-  echo "${HOME}/rpi-restroom/run.sh" >${HOME}/.config/rpi-run
-
-  autostart
-
-  reboot
-}
-
-rek() {
-  CMD="${1}"
-
-  if [ "${CMD}" == "stop" ]; then
-    rm -rf ${HOME}/.config/rpi-run
-
-    killall chromium-browser
-    return
-  fi
-
-  command -v unclutter >/dev/null || sudo apt install -y unclutter matchbox
-
-  if [ ! -d ${HOME}/rpi-rek ]; then
-    git clone https://github.com/nalbam/rpi-rek ${HOME}/rpi-rek
-  else
-    pushd ${HOME}/rpi-rek
-    git pull
-    popd
-  fi
-
-  pushd ${HOME}/rpi-rek/src
-  npm install
-  popd
-
-  echo "${HOME}/rpi-rek/run.sh" >${HOME}/.config/rpi-run
-
-  autostart
-
-  reboot
-}
-
-scan() {
-  CMD="${1}"
-
-  if [ "${CMD}" == "stop" ]; then
-    rm -rf ${HOME}/.config/rpi-run
-
-    killall chromium-browser
-    return
-  fi
-
-  command -v arp-scan >/dev/null || sudo apt install -y arp-scan
-  command -v unclutter >/dev/null || sudo apt install -y unclutter matchbox
-
-  if [ ! -d ${HOME}/rpi-scan ]; then
-    git clone https://github.com/nalbam/rpi-scan ${HOME}/rpi-scan
-  else
-    pushd ${HOME}/rpi-scan
-    git pull
-    popd
-  fi
-
-  pushd ${HOME}/rpi-scan/src
-  npm install
-  popd
-
-  echo "${HOME}/rpi-scan/run.sh" >${HOME}/.config/rpi-run
-
-  autostart
-
-  reboot
 }
 
 kiosk() {
   CMD="${1}"
 
   if [ "${CMD}" == "stop" ]; then
-    killall chromium-browser
+    killall chromium-browser 2>/dev/null || killall chromium 2>/dev/null
+    rm -f ${HOME}/.config/rpi-kiosk
+    _echo "Kiosk mode stopped" 2
     return
   fi
 
-  command -v unclutter >/dev/null || sudo apt install -y unclutter matchbox
+  # 필요한 패키지 설치
+  command -v unclutter >/dev/null || sudo apt install -y unclutter
+  command -v matchbox-window-manager >/dev/null || sudo apt install -y matchbox-window-manager
 
-  # url
+  # URL 설정
   TARGET="${HOME}/.config/rpi-kiosk"
-
   LIST="${HOME}/.config/rpi-kiosk-list"
 
   if [ ! -f ${LIST} ]; then
-    cp ${PACKAGE_DIR}/kiosk ${LIST}
+    cp ${PACKAGE_DIR}/kiosk ${LIST} 2>/dev/null || echo "http://localhost:3000" >${LIST}
   fi
 
   _select_one
@@ -543,66 +352,128 @@ kiosk() {
     fi
 
     if [ "${KIOSK}" == "" ]; then
-      _error
+      _error "No URL provided"
     fi
   fi
 
   echo "${KIOSK}" >${TARGET}
 
-  if [ "${CODE}" != "" ]; then
-    sed -i "s/CODE/$CODE/g" ${TARGET}
-  fi
+  _bar
+  _echo "Kiosk URL configured: ${KIOSK}" 2
+  _bar
 
+  # 자동시작 설정
   autostart
 
-  reboot
+  _bar
+  _echo "Kiosk mode configured. Reboot to apply changes." 2
+  _read "Reboot now? [y/N]: "
+
+  if [ "${ANSWER}" == "y" ] || [ "${ANSWER}" == "Y" ]; then
+    reboot
+  fi
 }
 
 screensaver() {
-  # lightdm
-  TARGET="/etc/lightdm/lightdm.conf"
-  TEMP="${TEMP_DIR}/lightdm.tmp"
+  _bar
+  _echo "Screensaver Configuration" 4
+  _bar
 
-  if [ ! -f ${TARGET} ]; then
-    return 0
+  # 환경 감지
+  if [ "$XDG_SESSION_TYPE" == "wayland" ] || [ -f "${HOME}/.config/wayfire.ini" ]; then
+    _echo "Detected Wayland environment" 3
+
+    # Wayfire 설정
+    WAYFIRE_CONFIG="${HOME}/.config/wayfire.ini"
+
+    if [ -f ${WAYFIRE_CONFIG} ]; then
+      backup ${WAYFIRE_CONFIG}
+
+      # idle 섹션이 없으면 추가
+      if ! grep -q "^\[idle\]" ${WAYFIRE_CONFIG}; then
+        cat >>${WAYFIRE_CONFIG} <<EOF
+
+[idle]
+screensaver_timeout = -1
+dpms_timeout = -1
+EOF
+        _bar
+        _echo "Wayfire screensaver disabled" 2
+        cat ${WAYFIRE_CONFIG} | grep -A 2 "\[idle\]"
+        _bar
+      else
+        # idle 섹션이 있으면 값만 수정
+        sed -i '/^\[idle\]/,/^\[/ s/screensaver_timeout.*/screensaver_timeout = -1/' ${WAYFIRE_CONFIG}
+        sed -i '/^\[idle\]/,/^\[/ s/dpms_timeout.*/dpms_timeout = -1/' ${WAYFIRE_CONFIG}
+        _bar
+        _echo "Wayfire screensaver settings updated" 2
+        cat ${WAYFIRE_CONFIG} | grep -A 2 "\[idle\]"
+        _bar
+      fi
+    else
+      _echo "Wayfire config not found. Creating..." 3
+      mkdir -p ${HOME}/.config
+      cat >${WAYFIRE_CONFIG} <<EOF
+[idle]
+screensaver_timeout = -1
+dpms_timeout = -1
+EOF
+      _bar
+      _echo "Wayfire screensaver disabled" 2
+      cat ${WAYFIRE_CONFIG}
+      _bar
+    fi
+  else
+    # X11 환경
+    _echo "Detected X11 environment" 3
+
+    # lightdm 설정
+    TARGET="/etc/lightdm/lightdm.conf"
+
+    if [ -f ${TARGET} ]; then
+      backup ${TARGET}
+      sudo sed -i "s/\#xserver\-command\=X/xserver-command\=X \-s 0 \-dpms/g" ${TARGET}
+
+      _bar
+      _echo "LightDM screensaver disabled" 2
+      cat ${TARGET} | grep xserver-command
+      _bar
+    fi
+
+    # xinitrc 설정
+    TEMPLATE="${PACKAGE_DIR}/xinitrc.sh"
+    TARGET="/etc/X11/xinit/xinitrc"
+    TEMP="${TEMP_DIR}/xinitrc.tmp"
+
+    if [ -f ${TARGET} ]; then
+      backup ${TARGET}
+
+      if [ $(cat ${TARGET} | grep -c "screensaver") -eq 0 ]; then
+        cp -rf ${TARGET} ${TEMP}
+        echo "" >>${TEMP}
+        cat ${TEMPLATE} >>${TEMP}
+        sudo cp ${TEMP} ${TARGET}
+      fi
+
+      _bar
+      _echo "X11 screensaver disabled" 2
+      cat ${TARGET} | grep xset
+      _bar
+    fi
+
+    # 현재 세션에서 즉시 적용 (X11)
+    if command -v xset >/dev/null && [ ! -z "$DISPLAY" ]; then
+      xset s off
+      xset -dpms
+      xset s noblank
+      _echo "Applied to current X11 session" 2
+    fi
   fi
 
-  backup ${TARGET}
-
-  # xserver-command=X -s 0 -dpms
-  sudo sed -i "s/\#xserver\-command\=X/xserver-command\=X \-s 0 \-dpms/g" ${TARGET}
-
   _bar
-  cat ${TARGET} | grep xserver-command
+  _echo "Screensaver configuration completed" 2
+  _echo "Note: Reboot may be required for full effect" 6
   _bar
-
-  # xinitrc
-  TEMPLATE="${PACKAGE_DIR}/xinitrc.sh"
-  TARGET="/etc/X11/xinit/xinitrc"
-  TEMP="${TEMP_DIR}/xinitrc.tmp"
-
-  if [ ! -f ${TARGET} ]; then
-    return 0
-  fi
-
-  backup ${TARGET}
-
-  if [ $(cat ${TARGET} | grep -c "screensaver") -eq 0 ]; then
-    cp -rf ${TARGET} ${TEMP}
-    echo "" >>${TEMP}
-    cat ${TEMPLATE} >>${TEMP}
-    sudo cp ${TEMP} ${TARGET}
-  fi
-
-  _bar
-  cat ${TARGET} | grep xset
-  _bar
-}
-
-roms() {
-  SERVER="${1:-roms.nalbam.com}"
-
-  rsync -av --bwlimit=2048 ${SERVER}:/home/pi/RetroPie/roms/ /home/pi/RetroPie/roms/
 }
 
 backup() {
@@ -639,9 +510,6 @@ case ${CMD} in
 auto)
   auto
   ;;
-arcade | picade | game)
-  arcade
-  ;;
 update)
   update
   ;;
@@ -651,26 +519,11 @@ upgrade)
 init)
   init
   ;;
-apache)
-  apache
-  ;;
 node | nodejs)
   node
   ;;
 docker)
   docker
-  ;;
-lcd)
-  lcd "${PARAM1}"
-  ;;
-date | localtime)
-  localtime
-  ;;
-locale)
-  locale "${PARAM1}"
-  ;;
-keyboard)
-  keyboard "${PARAM1}"
   ;;
 aliases)
   aliases
@@ -678,41 +531,11 @@ aliases)
 wifi)
   wifi "${PARAM1}" "${PARAM2}"
   ;;
-qr)
-  qr
-  ;;
-still)
-  still
-  ;;
-motion)
-  motion
-  ;;
 sound)
   sound
   ;;
-mp3 | mpg321)
-  mp3
-  ;;
-speak | espeak)
-  speak "${PARAM1}"
-  ;;
-rek)
-  rek "${PARAM1}" "${PARAM2}"
-  ;;
-scan)
-  scan "${PARAM1}" "${PARAM2}"
-  ;;
 kiosk)
-  kiosk "${PARAM1}" "${PARAM2}"
-  ;;
-mirror)
-  mirror "${PARAM1}" "${PARAM2}"
-  ;;
-restroom)
-  restroom "${PARAM1}" "${PARAM2}"
-  ;;
-roms)
-  roms "${PARAM1}"
+  kiosk "${PARAM1}"
   ;;
 screensaver)
   screensaver
