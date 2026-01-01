@@ -137,7 +137,7 @@ usage() {
   echo "${0} upgrade     [시스템 패키지 업그레이드]"
   echo "${0} aliases     [쉘 별칭 설정]"
   echo "${0} interfaces  [하드웨어 인터페이스 활성화 (SPI, I2C, Camera)]"
-  echo "${0} node        [Node.js 20 설치]"
+  echo "${0} node [VER]  [Node.js 설치 (기본: 24)]"
   echo "${0} docker      [Docker 설치]"
   echo "${0} wifi        [WiFi 설정 (NetworkManager)]"
   echo "${0} sound       [오디오 설정 (PulseAudio/PipeWire)]"
@@ -196,9 +196,15 @@ aliases() {
 }
 
 node() {
+  VERSION="${1:-24}"
+
+  _bar
+  _echo "Installing Node.js ${VERSION}..." 4
+  _bar
+
   # Download and verify before executing
   SETUP_SCRIPT="${TEMP_DIR}/nodesource_setup.sh"
-  curl -fsSL https://deb.nodesource.com/setup_20.x -o "${SETUP_SCRIPT}"
+  curl -fsSL "https://deb.nodesource.com/setup_${VERSION}.x" -o "${SETUP_SCRIPT}"
 
   # Execute with bash
   sudo bash "${SETUP_SCRIPT}"
@@ -478,7 +484,7 @@ interfaces)
   enable_interfaces
   ;;
 node | nodejs)
-  node
+  node "${PARAM1}"
   ;;
 docker)
   docker
