@@ -1,0 +1,29 @@
+[Unit]
+Description=Raspberry Pi CCTV Viewer
+Documentation=https://github.com/nalbam/rpi
+After=graphical.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/rpi/cv2
+Environment="DISPLAY=:0"
+Environment="CCTV_USERNAME=admin"
+Environment="CCTV_PASSWORD=password"
+Environment="CCTV_SERVERS=192.168.1.43:554"
+ExecStart=/usr/bin/python3 /home/pi/rpi/cv2/cctv.py
+Restart=on-failure
+RestartSec=10s
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=rpi-cctv
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=graphical.target

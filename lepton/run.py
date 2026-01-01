@@ -1,47 +1,54 @@
 #!/usr/bin/env python3
 
 """
-  This example is for Raspberry Pi (Linux) only!
-  It will not work on microcontrollers running CircuitPython!
+FLIR Lepton 3 Thermal Camera Viewer
+
+This example is for Raspberry Pi (Linux) only!
+It will not work on microcontrollers running CircuitPython!
+
+Requirements:
+- FLIR Lepton 3 thermal camera connected via SPI
+- SPI enabled in raspi-config
 """
 
-import cv2
-import math
-import numpy as np
-import os
-import pygame
-import time
-import time
+import logging
 import traceback
+import time
 
-from colour import Color
-
-from scipy.interpolate import griddata
+import cv2
+import numpy as np
+import pygame
 
 from pylepton.Lepton3 import Lepton3
-
 from colormap import colormap
 
-
-# low range of the sensor
-MINTEMP = 29000
-
-# high range of the sensor
-MAXTEMP = 31000
-
-FRAME_RATE = 15
+# Setup logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 
-# some utility functions
-def constrain(val, min_val, max_val):
-    return min(max_val, max(min_val, val))
+# Thermal sensor range configuration
+MINTEMP = 29000  # Low range of the sensor (in sensor units)
+MAXTEMP = 31000  # High range of the sensor (in sensor units)
 
-
-def map_value(x, in_min, in_max, out_min, out_max):
-    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+# Display configuration
+DISPLAY_PIXEL_WIDTH = 4
+DISPLAY_PIXEL_HEIGHT = 4
 
 
 def get_color(v):
+    """
+    Get color from colormap for thermal visualization.
+
+    Args:
+        v: Value between 0-255
+
+    Returns:
+        tuple: RGB color values (r, g, b)
+    """
     i = min(255, max(0, int(v)))
     return (
         colormap[i * 3],
@@ -51,104 +58,96 @@ def get_color(v):
 
 
 def run():
+    """Main thermal camera viewer loop."""
     device = "/dev/spidev0.0"
 
-    a = np.zeros((240, 320, 3), dtype=np.uint8)
-    lepton_buf = np.zeros((120, 160, 1), dtype=np.uint16)
+    # Lepton 3 sensor dimensions
+    SENSOR_WIDTH = 160
+    SENSOR_HEIGHT = 120
 
-    pixels = [160, 120]
-    length = pixels[0] * pixels[1]
+    # Display dimensions (scaled up)
+    width = SENSOR_WIDTH * DISPLAY_PIXEL_WIDTH
+    height = SENSOR_HEIGHT * DISPLAY_PIXEL_HEIGHT
 
-    # pylint: disable=invalid-slice-index
-    points = [(math.floor(ix / pixels[1]), (ix % pixels[1])) for ix in range(0, length)]
-    grid_x, grid_y = np.mgrid[0:159:160j, 0:119:120j]
-    # pylint: enable=invalid-slice-index
+    # Initialize buffers
+    lepton_buf = np.zeros((SENSOR_HEIGHT, SENSOR_WIDTH, 1), dtype=np.uint16)
 
-    width = pixels[0] * 4
-    height = pixels[1] * 4
-
-    displayPixelWidth = 4
-    displayPixelHeight = 4
-
-    # pygame
+    # Initialize pygame
+    logger.info("Initializing thermal camera display")
     pygame.init()
-
-    # clock = pygame.time.Clock()
-
     screen = pygame.display.set_mode((width, height))
-
+    pygame.display.set_caption("FLIR Lepton 3 Thermal Camera")
     screen.fill((0, 0, 0))
     pygame.display.update()
 
-    # let the sensor initialize
+    # Let the sensor initialize
     time.sleep(0.1)
+    logger.info("Starting thermal camera capture (Press ESC or Q to exit)")
 
-    run = True
-    while run:
+    running = True
+    while running:
+        # Handle events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                run = False
+                running = False
                 break
 
+        # Check for key presses
         keys = pygame.key.get_pressed()
         if keys[pygame.K_ESCAPE] or keys[pygame.K_q]:
-            run = False
-
-        if run == False:
+            running = False
             break
 
-        lepton_min = float("inf")
-        lepton_max = float("-inf")
-
-        # read the pixels
-        pixels = []
-
+        # Capture thermal frame
         try:
-            with Lepton3(device) as l:
-                _, nr = l.capture(lepton_buf)
+            with Lepton3(device) as lepton:
+                _, _ = lepton.capture(lepton_buf)
 
-                # print(_)
-                # print(nr)
-
-                for ix, row in enumerate(lepton_buf):  # 120
-                    for jx, pixel in enumerate(row):  # 160
+                # Constrain pixel values to sensor range
+                for ix, row in enumerate(lepton_buf):
+                    for jx, pixel in enumerate(row):
                         lepton_buf[ix][jx] = min(max(pixel, MINTEMP), MAXTEMP)
 
+                # Set reference points for normalization
                 lepton_buf[0][0] = MAXTEMP
                 lepton_buf[0][1] = MINTEMP
 
+                # Normalize to full range
                 cv2.normalize(lepton_buf, lepton_buf, 0, 65535, cv2.NORM_MINMAX)
 
-                # for ix, row in enumerate(lepton_buf):  # 120
-                #     lepton_min = min(lepton_min, min(row))
-                #     lepton_max = max(lepton_max, max(row))
-                # print(lepton_min, lepton_max)
-
+                # Shift to 8-bit range for colormap
                 np.right_shift(lepton_buf, 8, lepton_buf)
 
-        except Exception:
+        except Exception as e:
+            logger.error(f"Error capturing frame: {e}")
             traceback.print_exc()
+            continue
 
-        # draw everything
-        for ix, row in enumerate(lepton_buf):  # 120
-            for jx, pixel in enumerate(row):  # 160
+        # Draw thermal image
+        for ix, row in enumerate(lepton_buf):
+            for jx, pixel in enumerate(row):
                 color = get_color(pixel)
                 pygame.draw.rect(
                     screen,
                     color,
                     (
-                        # left, top, width, height
-                        displayPixelWidth * jx,
-                        displayPixelHeight * ix,
-                        displayPixelWidth,
-                        displayPixelHeight,
+                        DISPLAY_PIXEL_WIDTH * jx,
+                        DISPLAY_PIXEL_HEIGHT * ix,
+                        DISPLAY_PIXEL_WIDTH,
+                        DISPLAY_PIXEL_HEIGHT,
                     ),
                 )
 
         pygame.display.update()
-        # clock.tick(FRAME_RATE)
 
+    logger.info("Thermal camera viewer closed")
     pygame.quit()
 
 
-run()
+if __name__ == "__main__":
+    try:
+        run()
+    except KeyboardInterrupt:
+        logger.info("Interrupted by user")
+    except Exception as e:
+        logger.error(f"Fatal error: {e}", exc_info=True)
