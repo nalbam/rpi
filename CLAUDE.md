@@ -1,19 +1,19 @@
 # CLAUDE.md
 
-이 파일은 Claude Code (claude.ai/code)가 이 저장소에서 작업할 때 참고하는 가이드입니다.
+This file serves as a guide for Claude Code (claude.ai/code) when working in this repository.
 
-## 프로젝트 개요
+## Project Overview
 
-라즈베리파이 초기화 및 웹서버 설정을 위한 유틸리티 스크립트입니다. **Raspberry Pi OS Bookworm (Debian 12) 전용**으로 설계되었습니다.
+Utility scripts for Raspberry Pi initialization and web server setup. Designed exclusively for **Raspberry Pi OS Bookworm (Debian 12)**.
 
-## 시스템 요구사항
+## System Requirements
 
-- **Raspberry Pi OS Bookworm (Debian 12) 이상**
+- **Raspberry Pi OS Bookworm (Debian 12) or later**
 - Raspberry Pi 3/4/5
 
-> ⚠️ **중요**: 레거시 시스템(Bullseye, Buster 등)은 지원하지 않습니다.
+> ⚠️ **Important**: Legacy systems (Bullseye, Buster, etc.) are not supported.
 
-## 빠른 설정
+## Quick Setup
 
 ```bash
 git clone https://github.com/nalbam/rpi
@@ -21,194 +21,194 @@ cd rpi
 ./run.sh auto
 ```
 
-`auto` 명령은 기본 패키지를 설치합니다.
+The `auto` command installs basic packages.
 
-## 핵심 기능
+## Core Features
 
-### 1. 시스템 초기화
-- 기본 패키지 설치 (curl, wget, unzip, vim, jq, git)
-- 시스템 업데이트 및 업그레이드
-- OS 버전 확인 (Bookworm 이상 필요)
+### 1. System Initialization
+- Install basic packages (curl, wget, unzip, vim, jq, git)
+- System update and upgrade
+- OS version check (Bookworm or later required)
 
-### 2. Node.js 설치
-- 버전 선택 가능 (20, 22, 24)
-- nodesource 저장소 사용
-- 자동 설치 및 검증
+### 2. Node.js Installation
+- Version selection available (20, 22, 24)
+- Uses nodesource repository
+- Automatic installation and verification
 
-### 3. Nginx 웹서버 관리
-- Nginx 및 Certbot 설치
-- 리버스 프록시 자동 설정
-- Let's Encrypt SSL 자동 발급 및 갱신
-- WebSocket 지원
-- 도메인 관리 (추가, 삭제, 목록, 활성화/비활성화)
+### 3. Nginx Web Server Management
+- Install Nginx and Certbot
+- Automatic reverse proxy configuration
+- Let's Encrypt SSL automatic issuance and renewal
+- WebSocket support
+- Domain management (add, remove, list, enable/disable)
 
-## 주요 명령어
+## Main Commands
 
-### 초기화
+### Initialization
 ```bash
-./run.sh init      # 기본 패키지 설치
-./run.sh auto      # init 자동 실행
-./run.sh update    # git pull로 저장소 업데이트
-./run.sh upgrade   # apt 패키지 업그레이드
+./run.sh init      # Install basic packages
+./run.sh auto      # Run init automatically
+./run.sh update    # Update repository with git pull
+./run.sh upgrade   # Upgrade apt packages
 ```
 
 ### Node.js
 ```bash
-./run.sh node      # Node.js 24 설치 (기본)
-./run.sh node 20   # Node.js 20 설치
-./run.sh node 22   # Node.js 22 설치
+./run.sh node      # Install Node.js 24 (default)
+./run.sh node 20   # Install Node.js 20
+./run.sh node 22   # Install Node.js 22
 ```
 
 ### Nginx
 ```bash
-# 설치
+# Installation
 ./run.sh nginx init
 
-# 리버스 프록시 추가 (SSL 자동 설정)
+# Add reverse proxy (with automatic SSL)
 ./run.sh nginx add example.com 3000
 ./run.sh nginx add api.example.com 8080
 
-# 관리
-./run.sh nginx ls                  # 사이트 목록
-./run.sh nginx rm example.com      # 사이트 삭제
-./run.sh nginx reload              # 설정 재시작
-./run.sh nginx test                # 설정 검증
-./run.sh nginx status              # 상태 확인
-./run.sh nginx enable example.com  # 활성화
-./run.sh nginx disable example.com # 비활성화
-./run.sh nginx log example.com     # 로그 확인
-./run.sh nginx ssl-renew           # SSL 인증서 갱신
+# Management
+./run.sh nginx ls                  # List sites
+./run.sh nginx rm example.com      # Remove site
+./run.sh nginx reload              # Reload configuration
+./run.sh nginx test                # Test configuration
+./run.sh nginx status              # Show status
+./run.sh nginx enable example.com  # Enable site
+./run.sh nginx disable example.com # Disable site
+./run.sh nginx log example.com     # View logs
+./run.sh nginx ssl-renew           # Renew SSL certificates
 ```
 
-## 아키텍처
+## Architecture
 
-### 핵심 구성요소
+### Core Components
 
-**`run.sh`** - 메인 관리 스크립트
-- `set -euo pipefail`로 안전성 강화
-- 입력 검증 및 에러 처리
-- OS 버전 확인 (Bookworm 이상)
+**`run.sh`** - Main management script
+- Enhanced safety with `set -euo pipefail`
+- Input validation and error handling
+- OS version check (Bookworm or later)
 
-**`package/nginx-proxy.conf`** - Nginx 리버스 프록시 템플릿
-- HTTP/1.1 지원
-- WebSocket 지원 (Upgrade 헤더)
-- X-Forwarded-* 헤더 자동 설정
-- 프록시 캐시 바이패스
-- 파일 업로드 크기 제한 (100MB)
-- 프로덕션 타임아웃 설정 (60초)
+**`package/nginx-proxy.conf`** - Nginx reverse proxy template
+- HTTP/1.1 support
+- WebSocket support (Upgrade header)
+- Automatic X-Forwarded-* header configuration
+- Proxy cache bypass
+- File upload size limit (100MB)
+- Production timeout settings (60s)
 
-## 프로젝트 구조
+## Project Structure
 
 ```
 rpi/
-├── run.sh                    # 메인 스크립트
-├── package/                  # 설정 템플릿
-│   └── nginx-proxy.conf      # Nginx 리버스 프록시 템플릿
-├── README.md                 # 사용자 문서
-├── CLAUDE.md                 # 이 파일
-└── LICENSE                   # MIT 라이선스
+├── run.sh                    # Main script
+├── package/                  # Configuration templates
+│   └── nginx-proxy.conf      # Nginx reverse proxy template
+├── README.md                 # User documentation
+├── CLAUDE.md                 # This file
+└── LICENSE                   # MIT License
 ```
 
-## 보안 및 품질
+## Security and Quality
 
-### 보안
-1. **Command injection 방어**: 안전한 스크립트 실행
-2. **입력 검증**:
-   - 도메인 형식 검증 (RFC 규격)
-   - 포트 범위 검증 (1-65535)
-   - Node.js 버전 검증 (20, 22, 24)
-   - 로그 타입 검증 (access, error)
-3. **스크립트 안전성**: `set -euo pipefail` 적용
-4. **SSL 자동화**: Let's Encrypt certbot 자동 갱신
-5. **안전한 삭제**: 확인 프롬프트로 실수 방지
+### Security
+1. **Command injection defense**: Safe script execution
+2. **Input validation**:
+   - Domain format validation (RFC compliant)
+   - Port range validation (1-65535)
+   - Node.js version validation (20, 22, 24)
+   - Log type validation (access, error)
+3. **Script safety**: `set -euo pipefail` applied
+4. **SSL automation**: Let's Encrypt certbot automatic renewal
+5. **Safe deletion**: Confirmation prompts to prevent mistakes
 
-### 에러 처리
-1. **설정 검증**: nginx -t로 설정 오류 사전 확인
-2. **롤백**: 실패 시 자동 롤백
-3. **명확한 에러 메시지**: 사용자 친화적 오류 출력
-4. **호환성**: POSIX 호환 grep 사용
+### Error Handling
+1. **Configuration validation**: Pre-check with nginx -t
+2. **Rollback**: Automatic rollback on failure
+3. **Clear error messages**: User-friendly error output
+4. **Compatibility**: POSIX-compliant grep usage
 
-## 코드 패턴
+## Code Patterns
 
-### Bash 스크립트 패턴
+### Bash Script Patterns
 
-`run.sh` 스크립트는 다음 패턴을 따릅니다:
+The `run.sh` script follows these patterns:
 
-- **안전성**: `set -euo pipefail`로 에러 시 즉시 종료
-- **입력 검증**: 모든 사용자 입력 검증 및 쿼우팅
-- **에러 처리**: `_error()` 함수로 일관된 에러 메시지
-- **템플릿 기반 설정**: `package/`의 설정 파일 복사 및 수정
-- **환경 감지**: OS 버전 확인 및 검증
+- **Safety**: Immediate termination on error with `set -euo pipefail`
+- **Input validation**: Validation and quoting of all user inputs
+- **Error handling**: Consistent error messages with `_error()` function
+- **Template-based configuration**: Copy and modify configuration files from `package/`
+- **Environment detection**: OS version check and validation
 
-### 함수 구조
+### Function Structure
 
 ```bash
-# 유틸리티 함수
-_bar()        # 구분선 출력
-_echo()       # 색상 출력
-_read()       # 사용자 입력
-_success()    # 성공 메시지 및 종료
-_error()      # 에러 메시지 및 종료
+# Utility functions
+_bar()        # Print separator line
+_echo()       # Colored output
+_read()       # User input
+_success()    # Success message and exit
+_error()      # Error message and exit
 
-# 메인 기능 함수
-check_os_version()  # OS 버전 확인
-init()              # 시스템 초기화
-node()              # Node.js 설치
-nginx()             # Nginx 관리
+# Main feature functions
+check_os_version()  # Check OS version
+init()              # System initialization
+node()              # Node.js installation
+nginx()             # Nginx management
 ```
 
-## Bookworm (Debian 12) 변경사항
+## Bookworm (Debian 12) Changes
 
-이 버전은 Bookworm 전용으로 단순화되었습니다:
+This version has been simplified for Bookworm only:
 
-### 제거된 기능
-- GPIO 프로그래밍 (gpio/ 디렉토리)
-- 열화상 카메라 (lepton/ 디렉토리)
-- OpenCV/CCTV (cv2/ 디렉토리)
-- Systemd 서비스 (systemd/ 디렉토리)
-- WiFi/Sound/Screensaver/Kiosk 설정
-- Docker 설치
+### Removed Features
+- GPIO programming (gpio/ directory)
+- Thermal camera (lepton/ directory)
+- OpenCV/CCTV (cv2/ directory)
+- Systemd services (systemd/ directory)
+- WiFi/Sound/Screensaver/Kiosk configuration
+- Docker installation
 
-### 유지되는 핵심 기능
-- 시스템 초기화 (init, update, upgrade)
-- Node.js 설치
-- Nginx 웹서버 관리
+### Retained Core Features
+- System initialization (init, update, upgrade)
+- Node.js installation
+- Nginx web server management
 
-## 개발 가이드라인
+## Development Guidelines
 
-코드 작성 시 다음 원칙을 따르세요:
+Follow these principles when writing code:
 
-1. **보안 우선**: 입력 검증, 에러 처리, 안전한 코드 실행
-2. **에러 처리**: 모든 에러 상황 고려 및 처리
-3. **단순성**: 필요한 기능만 유지
-4. **문서화**: 주석과 README로 명확한 설명
-5. **일관성**: 기존 코드 패턴 따르기
-6. **호환성**: POSIX 표준 준수 (grep -o 사용, grep -P 금지)
-7. **사용자 경험**: 중요한 작업 전 확인 프롬프트
+1. **Security first**: Input validation, error handling, safe code execution
+2. **Error handling**: Consider and handle all error scenarios
+3. **Simplicity**: Keep only necessary features
+4. **Documentation**: Clear explanations with comments and README
+5. **Consistency**: Follow existing code patterns
+6. **Compatibility**: POSIX standard compliance (use grep -o, avoid grep -P)
+7. **User experience**: Confirmation prompts before critical operations
 
-## 최근 개선사항 (2026-01-11)
+## Recent Improvements (2026-01-11)
 
-### 버그 수정
-- nginx 인자 전달 버그 수정 (shift 사용)
-- grep -P → grep -o 변경 (POSIX 호환성)
+### Bug Fixes
+- Fixed nginx argument passing bug (using shift)
+- Changed grep -P → grep -o (POSIX compatibility)
 
-### 기능 개선
-- 도메인 형식 검증 추가
-- Node.js 버전 검증 추가 (20, 22, 24)
-- 로그 타입 검증 추가 (access, error)
-- SSL 이메일 사용자 입력 기능
-- 도메인 삭제 시 확인 프롬프트
-- nginx-proxy.conf 프로덕션 설정 추가 (타임아웃, 업로드 크기)
-- 모든 주요 함수에 주석 추가
-- nginx 서브명령어 검증 개선
+### Feature Improvements
+- Added domain format validation
+- Added Node.js version validation (20, 22, 24)
+- Added log type validation (access, error)
+- Added SSL email user input feature
+- Added confirmation prompt when deleting domains
+- Added production settings to nginx-proxy.conf (timeout, upload size)
+- Added comments to all major functions
+- Improved nginx subcommand validation
 
-## 참고 문서
+## Reference Documentation
 
-- [Nginx 문서](https://nginx.org/en/docs/)
-- [Certbot 문서](https://certbot.eff.org/docs/)
-- [Raspberry Pi OS 문서](https://www.raspberrypi.com/documentation/computers/os.html)
-- [Node.js 문서](https://nodejs.org/en/docs/)
+- [Nginx Documentation](https://nginx.org/en/docs/)
+- [Certbot Documentation](https://certbot.eff.org/docs/)
+- [Raspberry Pi OS Documentation](https://www.raspberrypi.com/documentation/computers/os.html)
+- [Node.js Documentation](https://nodejs.org/en/docs/)
 
-## 라이센스
+## License
 
 MIT License

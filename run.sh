@@ -99,12 +99,12 @@ usage() {
   echo " Usage: ${0} {cmd}"
   _bar
   echo
-  echo "${0} init        [기본 패키지 설치]"
-  echo "${0} auto        [init 자동 실행]"
-  echo "${0} update      [저장소 업데이트]"
-  echo "${0} upgrade     [시스템 패키지 업그레이드]"
-  echo "${0} node [VER]  [Node.js 설치 (기본: 24)]"
-  echo "${0} nginx       [Nginx 웹서버 관리 (init|add|ls|rm|...)]"
+  echo "${0} init        [Install basic packages]"
+  echo "${0} auto        [Run init automatically]"
+  echo "${0} update      [Update repository]"
+  echo "${0} upgrade     [Upgrade system packages]"
+  echo "${0} node [VER]  [Install Node.js (default: 24)]"
+  echo "${0} nginx       [Manage Nginx web server (init|add|ls|rm|...)]"
   echo
   _bar
 }
