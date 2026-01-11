@@ -127,6 +127,8 @@ upgrade() {
   sudo apt autoremove -y
 }
 
+# Install basic packages and update system
+# Requires: Raspberry Pi OS Bookworm (Debian 12+)
 init() {
   _bar
   _echo "Installing basic packages..." 4
@@ -142,6 +144,10 @@ init() {
   _success "Basic packages installed successfully!"
 }
 
+# Install Node.js with specified version
+# Usage: node [version]
+# Supported versions: 20, 22, 24
+# Default: 24
 node() {
   VERSION="${1:-24}"
 
@@ -170,6 +176,8 @@ node() {
   _bar
 }
 
+# Install and configure Nginx web server with Certbot
+# Enables automatic SSL certificate renewal
 nginx_init() {
   _bar
   _echo "Installing nginx and certbot..." 4
@@ -192,6 +200,9 @@ nginx_init() {
   _success "Nginx and certbot installed successfully!"
 }
 
+# Add reverse proxy configuration for a domain
+# Usage: nginx_add <domain> <port>
+# Automatically configures SSL with Let's Encrypt
 nginx_add() {
   DOMAIN="${1:-}"
   PORT="${2:-}"
@@ -247,10 +258,15 @@ nginx_add() {
   if [[ "${ANSWER}" =~ ^[Yy]$ ]]; then
     _echo "Setting up SSL certificate..." 4
     _echo "Make sure your domain ${DOMAIN} points to this server's IP address." 3
+
+    # Ask for email
+    _read "Enter email for SSL certificate (default: admin@${DOMAIN}): "
+    EMAIL="${ANSWER:-admin@${DOMAIN}}"
+
     sleep 2
 
     # Run certbot
-    if sudo certbot --nginx -d "${DOMAIN}" --non-interactive --agree-tos --redirect --email "admin@${DOMAIN}" 2>/dev/null; then
+    if sudo certbot --nginx -d "${DOMAIN}" --non-interactive --agree-tos --redirect --email "${EMAIL}" 2>/dev/null; then
       _bar
       _success "SSL certificate installed successfully for ${DOMAIN}!"
     else
@@ -265,6 +281,8 @@ nginx_add() {
   fi
 }
 
+# List all configured Nginx sites
+# Shows domain, port, and SSL status
 nginx_list() {
   _bar
   _echo "Nginx sites configuration:" 4
@@ -290,9 +308,9 @@ nginx_list() {
   for SITE_PATH in ${SITES}; do
     SITE_NAME=$(basename "${SITE_PATH}")
 
-    # Extract port from configuration
+    # Extract port from configuration (using POSIX-compliant grep)
     if [ -f "${SITE_PATH}" ]; then
-      PORT=$(grep -oP 'proxy_pass.*:(\d+)' "${SITE_PATH}" | grep -oP '\d+' | head -1)
+      PORT=$(grep -o 'proxy_pass.*:[0-9]*' "${SITE_PATH}" | grep -o '[0-9]*$' | head -1)
       SSL_STATUS=$(grep -q "listen 443 ssl" "${SITE_PATH}" && echo "✓ Yes" || echo "✗ No")
 
       if [ -n "${PORT}" ]; then
@@ -307,6 +325,8 @@ nginx_list() {
   _bar
 }
 
+# Remove site configuration and SSL certificate
+# Usage: nginx_remove <domain>
 nginx_remove() {
   DOMAIN="${1:-}"
 
@@ -324,6 +344,13 @@ nginx_remove() {
   _bar
   _echo "Removing nginx configuration for ${DOMAIN}..." 4
   _bar
+
+  # Confirm removal
+  _read "Are you sure you want to remove ${DOMAIN}? (y/N): "
+  if [[ ! "${ANSWER}" =~ ^[Yy]$ ]]; then
+    _echo "Cancelled." 3
+    exit 0
+  fi
 
   # Remove SSL certificate if exists
   if sudo certbot certificates 2>/dev/null | grep -q "${DOMAIN}"; then
@@ -427,12 +454,20 @@ nginx_disable() {
   _success "Site ${DOMAIN} disabled!"
 }
 
+# View Nginx logs for a domain
+# Usage: nginx_log <domain> [access|error]
+# Default: access logs
 nginx_log() {
   DOMAIN="${1:-}"
   LOG_TYPE="${2:-access}"
 
   if [ -z "${DOMAIN}" ]; then
     _error "Usage: ${0} nginx log <domain> [access|error]"
+  fi
+
+  # Validate log type
+  if [ "${LOG_TYPE}" != "access" ] && [ "${LOG_TYPE}" != "error" ]; then
+    _error "Invalid log type: ${LOG_TYPE}. Use 'access' or 'error'"
   fi
 
   if [ "${LOG_TYPE}" = "error" ]; then
@@ -471,8 +506,30 @@ nginx_ssl_renew() {
   _success "SSL certificate renewal complete!"
 }
 
+# Nginx management commands
+# Usage: nginx <subcommand> [args]
 nginx() {
   SUBCMD="${1:-}"
+
+  # Validate subcommand
+  if [ -z "${SUBCMD}" ]; then
+    _echo "Usage: ${0} nginx {init|add|ls|rm|reload|test|status|enable|disable|log|ssl-renew}" 1
+    echo ""
+    echo "Commands:"
+    echo "  init                     - Install nginx and certbot"
+    echo "  add <domain> <port>      - Add reverse proxy configuration"
+    echo "  ls                       - List all configured sites"
+    echo "  rm <domain>              - Remove site configuration"
+    echo "  reload                   - Reload nginx configuration"
+    echo "  test                     - Test nginx configuration"
+    echo "  status                   - Show nginx service status"
+    echo "  enable <domain>          - Enable site"
+    echo "  disable <domain>         - Disable site"
+    echo "  log <domain> [access|error] - View nginx logs"
+    echo "  ssl-renew                - Renew SSL certificates"
+    echo ""
+    exit 1
+  fi
 
   case ${SUBCMD} in
     init)
@@ -509,6 +566,8 @@ nginx() {
       nginx_ssl_renew
       ;;
     *)
+      _echo "Unknown nginx command: ${SUBCMD}" 1
+      echo ""
       _echo "Usage: ${0} nginx {init|add|ls|rm|reload|test|status|enable|disable|log|ssl-renew}" 1
       echo ""
       echo "Commands:"
