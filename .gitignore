@@ -36,6 +36,9 @@ LCD-show/
 *.bak
 *.backup
 
+# claude
+.claude/
+
 # Prompt
 .prompt-*.md
 .prompt.md
