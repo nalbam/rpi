@@ -553,7 +553,8 @@ node | nodejs)
   node "${PARAM1}"
   ;;
 nginx)
-  nginx "${PARAM1}" "${PARAM2}" "${3:-}"
+  shift
+  nginx "$@"
   ;;
 *)
   usage
