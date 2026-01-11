@@ -14,8 +14,14 @@ $RECYCLE.BIN/
 # Mac
 .DS_Store
 
-# lcd
-LCD-show/
+# Node.js
+node_modules/
+npm-debug.log
+.npm/
+
+# Vim
+*.swp
+*.swo
 
 # eclipse
 .settings/

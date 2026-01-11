@@ -145,6 +145,11 @@ init() {
 node() {
   VERSION="${1:-24}"
 
+  # Validate version
+  if [[ ! "${VERSION}" =~ ^(20|22|24)$ ]]; then
+    _error "Unsupported Node.js version: ${VERSION}. Supported versions: 20, 22, 24"
+  fi
+
   _bar
   _echo "Installing Node.js ${VERSION}..." 4
   _bar
@@ -193,6 +198,11 @@ nginx_add() {
 
   if [ -z "${DOMAIN}" ] || [ -z "${PORT}" ]; then
     _error "Usage: ${0} nginx add <domain> <port>"
+  fi
+
+  # Validate domain format
+  if ! [[ "${DOMAIN}" =~ ^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$ ]]; then
+    _error "Invalid domain format: ${DOMAIN}"
   fi
 
   # Validate port number
