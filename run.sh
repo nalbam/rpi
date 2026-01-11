@@ -139,6 +139,7 @@ usage() {
   echo "${0} interfaces  [하드웨어 인터페이스 활성화 (SPI, I2C, Camera)]"
   echo "${0} node [VER]  [Node.js 설치 (기본: 24)]"
   echo "${0} docker      [Docker 설치]"
+  echo "${0} nginx       [Nginx 웹서버 관리 (init|add|ls|rm|...)]"
   echo "${0} wifi        [WiFi 설정 (NetworkManager)]"
   echo "${0} sound       [오디오 설정 (PulseAudio/PipeWire)]"
   echo "${0} screensaver [화면보호기 비활성화 (Wayfire)]"
@@ -460,6 +461,360 @@ reboot_system() {
   sudo reboot
 }
 
+nginx_init() {
+  _bar
+  _echo "Installing nginx and certbot..." 4
+  _bar
+
+  # Install nginx and certbot
+  sudo apt update
+  sudo apt install -y nginx certbot python3-certbot-nginx
+
+  # Enable and start nginx
+  sudo systemctl enable nginx
+  sudo systemctl start nginx
+
+  # Setup certbot auto-renewal
+  _echo "Setting up certbot auto-renewal..." 2
+  sudo systemctl enable certbot.timer
+  sudo systemctl start certbot.timer
+
+  _bar
+  _success "Nginx and certbot installed successfully!"
+}
+
+nginx_add() {
+  DOMAIN="${1:-}"
+  PORT="${2:-}"
+
+  if [ -z "${DOMAIN}" ] || [ -z "${PORT}" ]; then
+    _error "Usage: ${0} nginx add <domain> <port>"
+  fi
+
+  # Validate port number
+  if ! [[ "${PORT}" =~ ^[0-9]+$ ]] || [ "${PORT}" -lt 1 ] || [ "${PORT}" -gt 65535 ]; then
+    _error "Invalid port number: ${PORT}"
+  fi
+
+  SITE_AVAILABLE="/etc/nginx/sites-available/${DOMAIN}"
+  SITE_ENABLED="/etc/nginx/sites-enabled/${DOMAIN}"
+
+  # Check if site already exists
+  if [ -f "${SITE_AVAILABLE}" ]; then
+    _error "Site configuration already exists: ${DOMAIN}"
+  fi
+
+  _bar
+  _echo "Creating nginx configuration for ${DOMAIN} -> localhost:${PORT}..." 4
+  _bar
+
+  # Create nginx configuration from template
+  sudo cp "${PACKAGE_DIR}/nginx-proxy.conf" "${SITE_AVAILABLE}"
+  sudo sed -i "s/DOMAIN/${DOMAIN}/g" "${SITE_AVAILABLE}"
+  sudo sed -i "s/PORT/${PORT}/g" "${SITE_AVAILABLE}"
+
+  # Enable site
+  sudo ln -sf "${SITE_AVAILABLE}" "${SITE_ENABLED}"
+
+  # Test nginx configuration
+  if ! sudo nginx -t; then
+    sudo rm -f "${SITE_AVAILABLE}" "${SITE_ENABLED}"
+    _error "Nginx configuration test failed. Configuration removed."
+  fi
+
+  # Reload nginx
+  sudo systemctl reload nginx
+
+  _echo "Site ${DOMAIN} created successfully!" 2
+  _echo ""
+
+  # Ask for SSL certificate
+  _read "Do you want to setup SSL certificate with Let's Encrypt? (y/N): "
+  if [[ "${ANSWER}" =~ ^[Yy]$ ]]; then
+    _echo "Setting up SSL certificate..." 4
+    _echo "Make sure your domain ${DOMAIN} points to this server's IP address." 3
+    sleep 2
+
+    # Run certbot
+    if sudo certbot --nginx -d "${DOMAIN}" --non-interactive --agree-tos --redirect --email "admin@${DOMAIN}" 2>/dev/null; then
+      _bar
+      _success "SSL certificate installed successfully for ${DOMAIN}!"
+    else
+      _echo "SSL certificate installation failed. You can try manually later with:" 3
+      _echo "  sudo certbot --nginx -d ${DOMAIN}" 3
+      _echo ""
+      _echo "Site is still accessible via HTTP." 2
+    fi
+  else
+    _bar
+    _success "Site ${DOMAIN} is now accessible via HTTP (port 80)."
+  fi
+}
+
+nginx_list() {
+  _bar
+  _echo "Nginx sites configuration:" 4
+  _bar
+
+  if [ ! -d "/etc/nginx/sites-enabled" ]; then
+    _echo "Nginx is not installed or sites-enabled directory not found." 1
+    return
+  fi
+
+  # List enabled sites
+  SITES=$(find /etc/nginx/sites-enabled -type l -o -type f 2>/dev/null | grep -v default | sort)
+
+  if [ -z "${SITES}" ]; then
+    _echo "No sites configured." 3
+    return
+  fi
+
+  echo ""
+  printf "%-30s %-10s %-10s\n" "DOMAIN" "PORT" "SSL"
+  echo "--------------------------------------------------------------------------------"
+
+  for SITE_PATH in ${SITES}; do
+    SITE_NAME=$(basename "${SITE_PATH}")
+
+    # Extract port from configuration
+    if [ -f "${SITE_PATH}" ]; then
+      PORT=$(grep -oP 'proxy_pass.*:(\d+)' "${SITE_PATH}" | grep -oP '\d+' | head -1)
+      SSL_STATUS=$(grep -q "listen 443 ssl" "${SITE_PATH}" && echo "✓ Yes" || echo "✗ No")
+
+      if [ -n "${PORT}" ]; then
+        printf "%-30s %-10s %-10s\n" "${SITE_NAME}" "${PORT}" "${SSL_STATUS}"
+      else
+        printf "%-30s %-10s %-10s\n" "${SITE_NAME}" "N/A" "${SSL_STATUS}"
+      fi
+    fi
+  done
+
+  echo ""
+  _bar
+}
+
+nginx_remove() {
+  DOMAIN="${1:-}"
+
+  if [ -z "${DOMAIN}" ]; then
+    _error "Usage: ${0} nginx rm <domain>"
+  fi
+
+  SITE_AVAILABLE="/etc/nginx/sites-available/${DOMAIN}"
+  SITE_ENABLED="/etc/nginx/sites-enabled/${DOMAIN}"
+
+  if [ ! -f "${SITE_AVAILABLE}" ]; then
+    _error "Site configuration not found: ${DOMAIN}"
+  fi
+
+  _bar
+  _echo "Removing nginx configuration for ${DOMAIN}..." 4
+  _bar
+
+  # Remove SSL certificate if exists
+  if sudo certbot certificates 2>/dev/null | grep -q "${DOMAIN}"; then
+    _read "SSL certificate found. Remove it? (y/N): "
+    if [[ "${ANSWER}" =~ ^[Yy]$ ]]; then
+      sudo certbot delete --cert-name "${DOMAIN}" --non-interactive
+      _echo "SSL certificate removed." 2
+    fi
+  fi
+
+  # Remove nginx configuration
+  sudo rm -f "${SITE_ENABLED}"
+  sudo rm -f "${SITE_AVAILABLE}"
+
+  # Reload nginx
+  sudo nginx -t && sudo systemctl reload nginx
+
+  _bar
+  _success "Site ${DOMAIN} removed successfully!"
+}
+
+nginx_reload() {
+  _bar
+  _echo "Reloading nginx..." 4
+  _bar
+
+  if sudo nginx -t; then
+    sudo systemctl reload nginx
+    _success "Nginx reloaded successfully!"
+  else
+    _error "Nginx configuration test failed. Please fix the errors."
+  fi
+}
+
+nginx_test() {
+  _bar
+  _echo "Testing nginx configuration..." 4
+  _bar
+
+  if sudo nginx -t; then
+    _success "Nginx configuration test passed!"
+  else
+    _error "Nginx configuration test failed!"
+  fi
+}
+
+nginx_status() {
+  _bar
+  _echo "Nginx service status:" 4
+  _bar
+  echo ""
+
+  sudo systemctl status nginx --no-pager
+
+  echo ""
+  _bar
+}
+
+nginx_enable() {
+  DOMAIN="${1:-}"
+
+  if [ -z "${DOMAIN}" ]; then
+    _error "Usage: ${0} nginx enable <domain>"
+  fi
+
+  SITE_AVAILABLE="/etc/nginx/sites-available/${DOMAIN}"
+  SITE_ENABLED="/etc/nginx/sites-enabled/${DOMAIN}"
+
+  if [ ! -f "${SITE_AVAILABLE}" ]; then
+    _error "Site configuration not found: ${DOMAIN}"
+  fi
+
+  if [ -L "${SITE_ENABLED}" ]; then
+    _echo "Site ${DOMAIN} is already enabled." 3
+    return
+  fi
+
+  sudo ln -sf "${SITE_AVAILABLE}" "${SITE_ENABLED}"
+  sudo nginx -t && sudo systemctl reload nginx
+
+  _success "Site ${DOMAIN} enabled!"
+}
+
+nginx_disable() {
+  DOMAIN="${1:-}"
+
+  if [ -z "${DOMAIN}" ]; then
+    _error "Usage: ${0} nginx disable <domain>"
+  fi
+
+  SITE_ENABLED="/etc/nginx/sites-enabled/${DOMAIN}"
+
+  if [ ! -L "${SITE_ENABLED}" ] && [ ! -f "${SITE_ENABLED}" ]; then
+    _echo "Site ${DOMAIN} is already disabled." 3
+    return
+  fi
+
+  sudo rm -f "${SITE_ENABLED}"
+  sudo nginx -t && sudo systemctl reload nginx
+
+  _success "Site ${DOMAIN} disabled!"
+}
+
+nginx_log() {
+  DOMAIN="${1:-}"
+  LOG_TYPE="${2:-access}"
+
+  if [ -z "${DOMAIN}" ]; then
+    _error "Usage: ${0} nginx log <domain> [access|error]"
+  fi
+
+  if [ "${LOG_TYPE}" = "error" ]; then
+    LOG_FILE="/var/log/nginx/${DOMAIN}.error.log"
+  else
+    LOG_FILE="/var/log/nginx/${DOMAIN}.access.log"
+  fi
+
+  if [ ! -f "${LOG_FILE}" ]; then
+    LOG_FILE="/var/log/nginx/${LOG_TYPE}.log"
+  fi
+
+  _bar
+  _echo "Nginx ${LOG_TYPE} log for ${DOMAIN}:" 4
+  _bar
+  echo ""
+
+  if [ -f "${LOG_FILE}" ]; then
+    sudo tail -50 "${LOG_FILE}"
+  else
+    _echo "Log file not found: ${LOG_FILE}" 1
+  fi
+
+  echo ""
+  _bar
+}
+
+nginx_ssl_renew() {
+  _bar
+  _echo "Renewing SSL certificates..." 4
+  _bar
+
+  sudo certbot renew
+
+  _bar
+  _success "SSL certificate renewal complete!"
+}
+
+nginx() {
+  SUBCMD="${1:-}"
+
+  case ${SUBCMD} in
+    init)
+      nginx_init
+      ;;
+    add)
+      nginx_add "${2:-}" "${3:-}"
+      ;;
+    ls|list)
+      nginx_list
+      ;;
+    rm|remove)
+      nginx_remove "${2:-}"
+      ;;
+    reload|restart)
+      nginx_reload
+      ;;
+    test)
+      nginx_test
+      ;;
+    status)
+      nginx_status
+      ;;
+    enable)
+      nginx_enable "${2:-}"
+      ;;
+    disable)
+      nginx_disable "${2:-}"
+      ;;
+    log)
+      nginx_log "${2:-}" "${3:-}"
+      ;;
+    ssl-renew)
+      nginx_ssl_renew
+      ;;
+    *)
+      _echo "Usage: ${0} nginx {init|add|ls|rm|reload|test|status|enable|disable|log|ssl-renew}" 1
+      echo ""
+      echo "Commands:"
+      echo "  init                     - Install nginx and certbot"
+      echo "  add <domain> <port>      - Add reverse proxy configuration"
+      echo "  ls                       - List all configured sites"
+      echo "  rm <domain>              - Remove site configuration"
+      echo "  reload                   - Reload nginx configuration"
+      echo "  test                     - Test nginx configuration"
+      echo "  status                   - Show nginx service status"
+      echo "  enable <domain>          - Enable site"
+      echo "  disable <domain>         - Disable site"
+      echo "  log <domain> [access|error] - View nginx logs"
+      echo "  ssl-renew                - Renew SSL certificates"
+      echo ""
+      exit 1
+      ;;
+  esac
+}
+
 ################################################################################
 
 CMD="${1:-}"
@@ -488,6 +843,9 @@ node | nodejs)
   ;;
 docker)
   docker
+  ;;
+nginx)
+  nginx "${PARAM1}" "${PARAM2}" "${3:-}"
   ;;
 aliases)
   aliases

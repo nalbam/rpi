@@ -73,6 +73,38 @@ cd rpi
 ./run.sh docker                    # Docker 설치
 ```
 
+### Nginx 웹서버
+
+```bash
+# Nginx 및 Certbot 설치
+./run.sh nginx init
+
+# 리버스 프록시 추가 (SSL 자동 설정)
+./run.sh nginx add example.com 3000
+./run.sh nginx add api.example.com 8080
+
+# 사이트 목록 조회
+./run.sh nginx ls
+
+# 사이트 삭제
+./run.sh nginx rm example.com
+
+# 기타 명령어
+./run.sh nginx reload              # 설정 재시작
+./run.sh nginx test                # 설정 검증
+./run.sh nginx status              # 상태 확인
+./run.sh nginx enable example.com  # 사이트 활성화
+./run.sh nginx disable example.com # 사이트 비활성화
+./run.sh nginx log example.com     # 로그 확인
+./run.sh nginx ssl-renew           # SSL 인증서 갱신
+```
+
+**특징:**
+- 리버스 프록시 자동 설정
+- Let's Encrypt SSL 자동 발급 및 갱신 (certbot)
+- WebSocket 지원
+- 간편한 도메인 관리
+
 ## GPIO 프로그래밍
 
 ### 의존성 설치

@@ -118,6 +118,32 @@ NetworkManager WiFi 설정 템플릿입니다.
 ./run.sh wifi "YourSSID" "YourPassword"
 ```
 
+#### nginx-proxy.conf
+Nginx 리버스 프록시 설정 템플릿입니다.
+
+**템플릿 변수:**
+- `DOMAIN` - 도메인 이름
+- `PORT` - 로컬 애플리케이션 포트
+
+**대상 디렉토리:**
+`/etc/nginx/sites-available/`
+
+**특징:**
+- HTTP/1.1 지원
+- WebSocket 지원 (Upgrade 헤더)
+- X-Forwarded-* 헤더 자동 설정
+- 프록시 캐시 바이패스
+
+**사용:**
+```bash
+./run.sh nginx add example.com 3000
+```
+
+이 명령어는 자동으로:
+1. 템플릿에서 설정 파일 생성
+2. sites-enabled로 심볼릭 링크
+3. nginx 설정 검증 및 재시작
+4. Let's Encrypt SSL 인증서 설정 (선택)
 
 #### motion.conf
 Motion (모션 감지 카메라 소프트웨어) 설정 파일입니다.
@@ -153,6 +179,12 @@ cd ..
 
 # 네트워크 설정
 ./run.sh wifi "SSID" "PASSWORD"
+
+# Nginx 웹서버
+./run.sh nginx init                # nginx 설치
+./run.sh nginx add example.com 3000  # 리버스 프록시 추가
+./run.sh nginx ls                  # 사이트 목록
+./run.sh nginx rm example.com      # 사이트 삭제
 
 # 로케일 및 키보드
 ./run.sh locale ko_KR.UTF-8
