@@ -67,7 +67,9 @@ cd rpi
 ### 개발 환경
 
 ```bash
-./run.sh node                      # Node.js 20 설치
+./run.sh node                      # Node.js 24 설치 (기본)
+./run.sh node 20                   # Node.js 20 설치
+./run.sh node 22                   # Node.js 22 설치
 ./run.sh docker                    # Docker 설치
 ```
 

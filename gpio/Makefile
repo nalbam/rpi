@@ -14,14 +14,8 @@ CC = gcc
 CFLAGS = -Wall -Wextra -O2
 LDFLAGS = -llgpio
 
-# Programs using lgpio (modernized)
-PROGRAMS_LGPIO = sonic servo
-
-# Legacy programs using wiringPi (deprecated - not built by default)
-# PROGRAMS_LEGACY = relay_high relay_low servo_15 detect temp sonic_servo sonic_relay
-
-# All modern programs
-PROGRAMS = $(PROGRAMS_LGPIO)
+# All programs (lgpio only)
+PROGRAMS = sonic servo
 
 # Installation directory
 INSTALL_DIR = /usr/local/bin
@@ -39,29 +33,6 @@ sonic: sonic.c
 servo: servo.c
 	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
 	@echo "Built $@ successfully"
-
-# Legacy programs (wiringPi - not recommended)
-# Uncomment if you still need wiringPi support
-# relay_high: relay_high.c
-# 	$(CC) $(CFLAGS) -o $@ $< -lwiringPi
-#
-# relay_low: relay_low.c
-# 	$(CC) $(CFLAGS) -o $@ $< -lwiringPi
-#
-# servo_15: servo_15.c
-# 	$(CC) $(CFLAGS) -o $@ $< -lwiringPi -lsoftPwm
-#
-# detect: detect.c
-# 	$(CC) $(CFLAGS) -o $@ $< -lwiringPi
-#
-# temp: temp.c
-# 	$(CC) $(CFLAGS) -o $@ $< -lwiringPi
-#
-# sonic_servo: sonic_servo.c
-# 	$(CC) $(CFLAGS) -o $@ $< -lwiringPi -lsoftPwm
-#
-# sonic_relay: sonic_relay.c
-# 	$(CC) $(CFLAGS) -o $@ $< -lwiringPi
 
 # Clean build artifacts
 clean:
