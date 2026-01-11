@@ -24,7 +24,7 @@ A collection of utility scripts for Raspberry Pi initialization and environment 
 ```bash
 git clone https://github.com/nalbam/rpi
 cd rpi
-./run.sh auto
+./run.sh init
 ```
 
 ## Main Commands
@@ -33,7 +33,6 @@ cd rpi
 
 ```bash
 ./run.sh init                      # Install basic packages
-./run.sh auto                      # Run init automatically
 ./run.sh update                    # Update repository (git pull)
 ./run.sh upgrade                   # Upgrade system packages
 ```

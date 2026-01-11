@@ -75,20 +75,13 @@ usage() {
   echo " Usage: ${0} {cmd}"
   _bar
   echo
-  echo "${0} init        [Install basic packages]"
-  echo "${0} auto        [Run init automatically]"
+  echo "${0} init        [Install basic packages and check OS version]"
   echo "${0} update      [Update repository]"
   echo "${0} upgrade     [Upgrade system packages]"
   echo "${0} node [VER]  [Install Node.js (default: 24)]"
   echo "${0} nginx       [Manage Nginx web server (init|add|ls|rm|...)]"
   echo
   _bar
-}
-
-# Run init automatically with OS version check
-auto() {
-  check_os_version
-  init
 }
 
 # Update repository with git pull
@@ -584,18 +577,15 @@ PARAM1="${2:-}"
 PARAM2="${3:-}"
 
 case ${CMD} in
-auto)
-  auto
+init)
+  check_os_version
+  init
   ;;
 update)
   update
   ;;
 upgrade)
   upgrade
-  ;;
-init)
-  check_os_version
-  init
   ;;
 node | nodejs)
   node "${PARAM1}"

@@ -18,10 +18,10 @@ Utility scripts for Raspberry Pi initialization and web server setup. Designed e
 ```bash
 git clone https://github.com/nalbam/rpi
 cd rpi
-./run.sh auto
+./run.sh init
 ```
 
-The `auto` command installs basic packages.
+The `init` command checks OS version and installs basic packages.
 
 ## Core Features
 
@@ -47,7 +47,6 @@ The `auto` command installs basic packages.
 ### Initialization
 ```bash
 ./run.sh init      # Install basic packages
-./run.sh auto      # Run init automatically
 ./run.sh update    # Update repository with git pull
 ./run.sh upgrade   # Upgrade apt packages
 ```
