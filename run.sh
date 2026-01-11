@@ -15,10 +15,13 @@ else
   TPUT=false
 fi
 
+# Print separator bar
 _bar() {
   _echo "================================================================================"
 }
 
+# Print colored message
+# Usage: _echo "message" [color_code]
 _echo() {
   if [ "${TPUT}" = "true" ] && [ -n "${2:-}" ]; then
     echo -e "$(tput setaf "$2")$1$(tput sgr0)"
@@ -27,6 +30,8 @@ _echo() {
   fi
 }
 
+# Read user input with optional color
+# Usage: _read "prompt"
 _read() {
   if [ "${TPUT}" = "true" ]; then
     read -p "$(tput setaf 6)$1$(tput sgr0)" ANSWER
@@ -35,44 +40,13 @@ _read() {
   fi
 }
 
-_select_one() {
-  echo
-
-  IDX=0
-  while read VAL; do
-    IDX=$((IDX + 1))
-    printf "%3s. %s\n" "${IDX}" "${VAL}"
-  done <"${LIST}"
-
-  CNT=$(wc -l < "${LIST}" | xargs)
-
-  echo
-  _read "Please select one. (1-${CNT}) : "
-
-  SELECTED=
-  if [ -z "${ANSWER}" ]; then
-    return
-  fi
-  TEST='^[0-9]+$'
-  if ! [[ ${ANSWER} =~ ${TEST} ]]; then
-    return
-  fi
-  SELECTED=$(sed -n "${ANSWER}p" "${LIST}")
-}
-
-_result() {
-  _echo "# $*" 4
-}
-
-_command() {
-  _echo "$ $*" 3
-}
-
+# Print success message and exit
 _success() {
   _echo "+ $*" 2
   exit 0
 }
 
+# Print error message and exit
 _error() {
   _echo "- $*" 1
   exit 1
@@ -80,6 +54,7 @@ _error() {
 
 ################################################################################
 
+# Check OS version (requires Bookworm/Debian 12+)
 check_os_version() {
   if [ -f /etc/os-release ]; then
     . /etc/os-release
@@ -95,6 +70,7 @@ check_os_version() {
 
 ################################################################################
 
+# Display usage information
 usage() {
   echo " Usage: ${0} {cmd}"
   _bar
@@ -109,17 +85,20 @@ usage() {
   _bar
 }
 
+# Run init automatically with OS version check
 auto() {
   check_os_version
   init
 }
 
+# Update repository with git pull
 update() {
   pushd "${SHELL_DIR}" > /dev/null
   git pull
   popd > /dev/null
 }
 
+# Upgrade system packages
 upgrade() {
   sudo apt update
   sudo apt upgrade -y
@@ -301,7 +280,7 @@ nginx_list() {
     return
   fi
 
-  echo ""
+  _echo ""
   printf "%-30s %-10s %-10s\n" "DOMAIN" "PORT" "SSL"
   echo "--------------------------------------------------------------------------------"
 
@@ -321,7 +300,7 @@ nginx_list() {
     fi
   done
 
-  echo ""
+  _echo ""
   _bar
 }
 
@@ -349,7 +328,7 @@ nginx_remove() {
   _read "Are you sure you want to remove ${DOMAIN}? (y/N): "
   if [[ ! "${ANSWER}" =~ ^[Yy]$ ]]; then
     _echo "Cancelled." 3
-    exit 0
+    return
   fi
 
   # Remove SSL certificate if exists
@@ -372,6 +351,7 @@ nginx_remove() {
   _success "Site ${DOMAIN} removed successfully!"
 }
 
+# Reload Nginx configuration
 nginx_reload() {
   _bar
   _echo "Reloading nginx..." 4
@@ -379,36 +359,42 @@ nginx_reload() {
 
   if sudo nginx -t; then
     sudo systemctl reload nginx
+    _bar
     _success "Nginx reloaded successfully!"
   else
     _error "Nginx configuration test failed. Please fix the errors."
   fi
 }
 
+# Test Nginx configuration
 nginx_test() {
   _bar
   _echo "Testing nginx configuration..." 4
   _bar
 
   if sudo nginx -t; then
+    _bar
     _success "Nginx configuration test passed!"
   else
     _error "Nginx configuration test failed!"
   fi
 }
 
+# Show Nginx service status
 nginx_status() {
   _bar
   _echo "Nginx service status:" 4
   _bar
-  echo ""
+  _echo ""
 
   sudo systemctl status nginx --no-pager
 
-  echo ""
+  _echo ""
   _bar
 }
 
+# Enable a site
+# Usage: nginx_enable <domain>
 nginx_enable() {
   DOMAIN="${1:-}"
 
@@ -434,6 +420,8 @@ nginx_enable() {
   _success "Site ${DOMAIN} enabled!"
 }
 
+# Disable a site
+# Usage: nginx_disable <domain>
 nginx_disable() {
   DOMAIN="${1:-}"
 
@@ -483,7 +471,7 @@ nginx_log() {
   _bar
   _echo "Nginx ${LOG_TYPE} log for ${DOMAIN}:" 4
   _bar
-  echo ""
+  _echo ""
 
   if [ -f "${LOG_FILE}" ]; then
     sudo tail -50 "${LOG_FILE}"
@@ -491,10 +479,11 @@ nginx_log() {
     _echo "Log file not found: ${LOG_FILE}" 1
   fi
 
-  echo ""
+  _echo ""
   _bar
 }
 
+# Renew SSL certificates
 nginx_ssl_renew() {
   _bar
   _echo "Renewing SSL certificates..." 4
